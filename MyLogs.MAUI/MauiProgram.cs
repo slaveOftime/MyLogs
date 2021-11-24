@@ -1,0 +1,35 @@
+﻿using Microsoft.AspNetCore.Components.WebView.Maui;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
+using MudBlazor.Services;
+using MyLogs.Services;
+
+namespace MyLogs.MAUI
+{
+    public static class MauiProgram
+    {
+        public static MauiApp CreateMauiApp(IPlatformService platformService)
+        {
+            var builder = MauiApp.CreateBuilder();
+            builder
+                .RegisterBlazorMauiWebView()
+                .UseMauiApp<App>()
+                .ConfigureFonts(fonts =>
+                {
+                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                });
+
+            builder.Services
+                .AddBlazorWebView()
+                .AddFunBlazor()
+                .AddMudServices()
+                .AddSingleton<ILogsService, LogsService>()
+                .AddSingleton<ISettingsService, SettingsService>()
+                .AddSingleton(platformService);
+
+            return builder.Build();
+        }
+    }
+}

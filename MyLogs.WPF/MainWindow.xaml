@@ -1,0 +1,31 @@
+﻿<Window x:Class="MyLogs.WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:myLogsUI="clr-namespace:MyLogs.UI;assembly=MyLogs"
+        xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
+        mc:Ignorable="d"
+        Title="MyLogs" Height="720" Width="1260" MinWidth="360" ShowInTaskbar="true"
+        WindowStyle="None" AllowsTransparency="True" WindowStartupLocation="CenterScreen"
+        Background="#AFFFFFFF">
+    
+    <WindowChrome.WindowChrome>
+        <WindowChrome x:Name="windowChrome" />
+    </WindowChrome.WindowChrome>
+    
+    <Grid x:Name="rootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Border x:Name="dragBar" Background="#7F75BB34" MouseDown="dragBar_MouseDown" Grid.Row="0" Height="6" />
+        <Border x:Name="activeBar" Height="20" Background="#02FFFFFF" Grid.Row="1" ></Border>
+        <blazor:BlazorWebView x:Name="blazor" HostPage="wwwroot/index.html" Services="{StaticResource services}" Grid.Row="1" Grid.RowSpan="2">
+            <blazor:BlazorWebView.RootComponents>
+                <blazor:RootComponent Selector="#app" ComponentType="{x:Type myLogsUI:Index}" />
+            </blazor:BlazorWebView.RootComponents>
+        </blazor:BlazorWebView>
+    </Grid>
+</Window>

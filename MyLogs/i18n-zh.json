@@ -1,0 +1,65 @@
+﻿{
+  "App": {
+    "FilterByTags": "标签筛选",
+    "GotoToday": "今天",
+    "ViewType": {
+      "Day": "天",
+      "Week": "周"
+    },
+    "Settings": {
+      "Title": "设置",
+      "LocalFolder": "本地文件夹",
+      "Language": "语言",
+      "FirstDayOfWeek": "每周的第一天",
+      "Theme": "主题",
+      "BackgrounColor": "背景色",
+      "AutoStart": "开机启动",
+      "AlwaysClickable": "始终可点击",
+      "EnableBackgroundBlur": "背景模糊",
+      "EnableBackgroundBlurTip": "当你进行窗口缩放或拖拽时遇到性能问题，你需要关闭这个背景模糊的选项",
+      "EnableHideHeaderTags": "隐藏日志开头显示的标签",
+      "EnableHideTimeline": "隐藏时间线",
+      "EnableAlwaysOnBottom": "始终置于桌面底部 (需要重启程序，如果窗口隐藏请按 Win+Tab)"
+    },
+    "Common": {
+      "Close": "关闭",
+      "Save": "保存",
+      "Delete": "删除",
+      "Add": "添加",
+      "Create": "创建"
+    },
+    "LogDialog": {
+      "SelectATag": "选择一个标签",
+      "Title": "标题",
+      "Detail": "细节",
+      "MarkAsDoneNow": "马上标记为完成",
+      "AlarmOnTime": "闹钟响起的时间",
+      "StartTime": "开始时间",
+      "EndTime": "结束时间",
+      "IsTodo": "待办事项",
+      "ToDoPlaceholder": "输入你想做的事然后按回车",
+      "MarkdownPlaceholder": "输入所想。。。支持markdown格式及扩展的任务清单格式。"
+    },
+    "TagsSelector": {
+      "Title": "选择标签",
+      "SelectATag": "选择一个标签",
+      "ChangeTag": "修改标签"
+    },
+    "Schedule": {
+      "Anytime": "任何时候",
+      "Today": "今天",
+      "Alarm": "闹钟",
+      "Range": "范围"
+    },
+    "WeekDay": {
+      "Monday": "周一",
+      "Tuesday": "周二",
+      "Wednesday": "周三",
+      "Thursday": "周四",
+      "Friday": "周五",
+      "Saturday": "周六",
+      "Sunday": "周天"
+    },
+    "MoveLogToDate": "转移日志"
+  }
+}

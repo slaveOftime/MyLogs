@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Fun.Blazor.Bindings\MudBlazor.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="i18n-en.json" />
+    <Content Remove="i18n-zh.json" />
+    <EmbeddedResource Include="i18n-en.json" />
+    <EmbeddedResource Include="i18n-zh.json">
+      <DependentUpon>i18n-en.json</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Core\Types.fs" />
+    <Compile Include="Core\Utils.fs" />
+    <Compile Include="Core\ParseLogs.fs" />
+    <Compile Include="Core\EncodeLogs.fs" />
+    <Compile Include="Core\LogPatterns.fs" />
+    <Compile Include="Services\IServices.fs" />
+    <Compile Include="Services\SettingsService.fs" />
+    <Compile Include="Services\LogsService.fs" />
+    <Compile Include="UI\Types.fs" />
+    <Compile Include="UI\Stores.fs" />
+    <Compile Include="UI\Styles.fs" />
+    <Compile Include="UI\Controls.fs" />
+    <Compile Include="UI\Dialogs.fs" />
+    <Compile Include="UI\ScheduleEditor.fs" />
+    <Compile Include="UI\SettingsDialog.fs" />
+    <Compile Include="UI\TagsSelector.fs" />
+    <Compile Include="UI\Tags.fs" />
+    <Compile Include="UI\MoveLogToDateDialog.fs" />
+    <Compile Include="UI\LogDialog.fs" />
+    <Compile Include="UI\LogItem.fs" />
+    <Compile Include="UI\LogsDaysView.fs" />
+    <Compile Include="UI\LogsCanvas.fs" />
+    <Compile Include="UI\Toolbar.fs" />
+    <Compile Include="UI\App.fs" />
+    <Compile Include="UI\Index.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BrowserInterop" Version="1.1.2" />
+    <PackageReference Include="FSharp.Core" Version="6.0.1" />
+    <PackageReference Include="Fun.Blazor.Feliz" Version="0.1.1" />
+    <PackageReference Include="Fun.I18n.Provider" Version="1.0.1" />
+    <PackageReference Include="Markdig" Version="0.26.0" />
+    <PackageReference Include="FSharp.SystemTextJson" Version="0.17.4" />
+    <PackageReference Include="Fun.Blazor" Version="1.1.0-beta206" />
+    <PackageReference Include="MudBlazor" Version="5.2.0" FunBlazorStyle="CE" />
+  </ItemGroup>
+</Project>

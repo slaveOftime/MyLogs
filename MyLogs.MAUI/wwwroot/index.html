@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html style="height: 100%;">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>My Logs</title>
+    <base href="/" />
+    <link rel="stylesheet" href="_content/MyLogs/css/app.css" />
+    <link rel="stylesheet" href="_content/MyLogs/css/markdown.css" />
+    <link rel="stylesheet" href="_content/MyLogs/css/google-font.css" />
+    <link rel="stylesheet" href="_content/MyLogs/css/prism-night-owl.css" />
+    <link rel="stylesheet" href="_content/MudBlazor/MudBlazor.min.css" />
+    <style>
+        #blazor-error-ui {
+            background: lightyellow;
+            bottom: 0;
+            box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+            display: none;
+            left: 0;
+            padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+            position: fixed;
+            width: 100%;
+            color: red;
+            z-index: 1000;
+        }
+        #blazor-error-ui a {
+            color: green;
+            font-weight: bold;
+        }
+        #blazor-error-ui .dismiss {
+            cursor: pointer;
+            position: absolute;
+            right: 0.75rem;
+            top: 0.5rem;
+        }
+    </style>
+</head>
+
+<body style="background-color: transparent; height: 100%; overscroll-behavior: none;">
+    <div id="app" style="height: 100%;"></div>
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+
+    <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/default.css">
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
+
+    <script>
+        window.addEventListener('touchmove', function () { });
+        // options are optional ;)
+        MobileDragDrop.polyfill({
+            // use this to make use of the scroll behaviour
+            dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+        });
+    </script>-->
+
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_content/BrowserInterop/scripts.js"></script>
+</body>
+</html>

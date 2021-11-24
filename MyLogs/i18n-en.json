@@ -1,0 +1,65 @@
+﻿{
+  "App": {
+    "FilterByTags": "Filter with tags",
+    "GotoToday": "Today",
+    "ViewType": {
+      "Day": "Day",
+      "Week": "Week"
+    },
+    "Settings": {
+      "Title": "Settings",
+      "LocalFolder": "Local folder",
+      "Language": "Language",
+      "FirstDayOfWeek": "First day of week",
+      "Theme": "Theme",
+      "BackgrounColor": "Background color",
+      "AutoStart": "Auto start",
+      "AlwaysClickable": "Always clickable",
+      "EnableBackgroundBlur": "Enable background blur",
+      "EnableBackgroundBlurTip": "If you got performance issue when resizing or moving window, you should disable this option",
+      "EnableHideHeaderTags": "Hide header tags",
+      "EnableHideTimeline": "Hide timeline",
+      "EnableAlwaysOnBottom": "Always on bottom of desktop (need restart application, if window is hidden please press Win+Tab)"
+    },
+    "Common": {
+      "Close": "Close",
+      "Save": "Save",
+      "Delete": "Delete",
+      "Add": "Add",
+      "Create": "Create"
+    },
+    "LogDialog": {
+      "SelectATag": "Select a tag",
+      "Title": "Title",
+      "Detail": "Detail",
+      "MarkAsDoneNow": "Mark as done now",
+      "AlarmOnTime": "Alarm on time",
+      "StartTime": "Start time",
+      "EndTime": "End time",
+      "IsTodo": "Todo",
+      "ToDoPlaceholder": "Input something then press enter",
+      "MarkdownPlaceholder": "Input anything you want. It supports markdown + task list."
+    },
+    "TagsSelector": {
+      "Title": "Tags selector",
+      "SelectATag": "Select a tag",
+      "ChangeTag": "Change tag"
+    },
+    "Schedule": {
+      "Anytime": "Anytime",
+      "Today": "Today",
+      "Alarm": "Alarm",
+      "Range": "Range"
+    },
+    "WeekDay": {
+      "Monday": "Monday",
+      "Tuesday": "Tuesday",
+      "Wednesday": "Wednesday",
+      "Thursday": "Thursday",
+      "Friday": "Friday",
+      "Saturday": "Saturday",
+      "Sunday": "Sunday"
+    },
+    "MoveLogToDate": "Move log to date"
+  }
+}
