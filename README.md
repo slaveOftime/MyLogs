@@ -24,6 +24,15 @@ Drag drop reorder
 ```
 
 
+## How to use
+
+### Windows
+
+1. Download the zip from the release page
+2. Unzip it and put anywhere you want then run MyLogs.WPF.exe
+3. You will be asked to download dotnet 6 desktop runtime, and if you do not have Microsoft Edge WebView2 on your computer, it will download it for you. So it may take some time when you start the application for the first time.
+4. Good luck 😊
+
 ## Share with different devices
 
 Currently you can set the local folder to the location of your cloud drive. For example you can set the folder to C:\Users\\(your_name)\OneDrive\MyLogs
