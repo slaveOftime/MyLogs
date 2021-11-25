@@ -263,7 +263,7 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                                         let! focused, setFocused = focused |> Adapt.withSetter
                                         textarea(){
                                             value str
-                                            onchange (fun e -> e.Value |> string |> Detail.Markdown |> setDetail)
+                                            oninput (fun e -> e.Value |> string |> Detail.Markdown |> setDetail)
                                             autofocus true
                                             placeholder i18n.App.LogDialog.MarkdownPlaceholder
                                             styles [
