@@ -209,7 +209,7 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                         if dialogProps.Options.FullScreen = Nullable true then
                             style.height (length.percent 100)
                         else
-                            style.height (length.percent 95)
+                            style.maxHeight (length.vh 70)
                             style.width 720
                     ]
                     childContent [
@@ -256,7 +256,7 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                                             | Action.DeleteLog _ -> ()
                                             | Action.EditLog _ | Action.CreateLog -> renderMarkdown.Publish false)
                                         childContent [ markdown str ]
-                                        styles [ style.height (length.percent 100); style.overflowYAuto; style.padding (length.px 0, length.px 5); style.marginTop 20 ]
+                                        styles [ style.height (length.percent 100); style.minHeight 50; style.overflowYAuto; style.padding (length.px 0, length.px 5); style.marginTop 20 ]
                                     }
                                 else
                                     adaptiview(){
