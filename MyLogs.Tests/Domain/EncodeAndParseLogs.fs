@@ -96,7 +96,7 @@ printfn "Great 😎"
         Schedule = Schedule.Anytime
         Status = Status.Created
     }
-    Log.DefaultValue
+    Log.DefaultValue()
 ]
 
 

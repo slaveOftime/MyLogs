@@ -32,7 +32,7 @@ type Log = {
     Schedule: Schedule
     Status: Status
 } with
-    static member DefaultValue = {
+    static member DefaultValue() = {
         Id = Guid.Empty
         Title = ""
         Detail = Detail.Markdown ""

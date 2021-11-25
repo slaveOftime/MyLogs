@@ -88,34 +88,13 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
     let renderMarkdown = cval renderMarkdown
     let focused = cval false
 
-    let titleF = cval (
-        match action' with
-        | EditLog l | DeleteLog l -> l.Title
-        | CreateLog _ -> ""
-    )
+    let detailCache = cval None
+    let isDetailChanged = cval false
 
-    let detail = cval (
+    let logForm = new AdaptiveForm<_, string> (
         match action' with
-        | EditLog l | DeleteLog l -> l.Detail
-        | CreateLog _ -> Detail.Todo []
-    )
-
-    let tags = cval (
-        match action' with
-        | EditLog l | DeleteLog l -> l.Tags
-        | CreateLog _ -> []
-    )
-
-    let schedule = cval (
-        match action' with
-        | EditLog l | DeleteLog l -> l.Schedule
-        | CreateLog -> Schedule.Anytime
-    )
-
-    let status = cval (
-        match action' with
-        | EditLog l | DeleteLog l -> l.Status
-        | CreateLog -> Status.Created
+        | EditLog l | DeleteLog l -> l
+        | CreateLog _ -> Log.DefaultValue()
     )
 
     let isDisabled =
@@ -123,74 +102,78 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
         | DeleteLog _ -> true
         | _ -> false
 
-    let createdTime () =
-        match action' with
-        | EditLog l | DeleteLog l -> l.CreatedTime
-        | CreateLog _ -> DateTimeOffset.Now
-
-    let updatedTime () =
-        match action' with
-        | EditLog _ | DeleteLog _ -> Some DateTimeOffset.Now
-        | CreateLog _ -> None
-
-
     let toggelTodo detail' =
-        transact (fun _ ->
-            detail.Value <-
-                match detail' with
-                | Detail.Todo ls ->
-                    ls
-                    |> List.map (fun x -> x.Content)
-                    |> String.concat (Environment.NewLine + Environment.NewLine)
-                    |> Detail.Markdown
-                | Detail.Markdown str ->
-                    str.Split(Environment.NewLine)
-                    |> Seq.filter (String.IsNullOrEmpty >> not)
-                    |> Seq.map (fun x -> { Content = x.Trim(); IsDone = false })
-                    |> Seq.toList
-                    |> Detail.Todo
-            renderMarkdown.Value <- false
+        logForm.UseFieldSetter(fun x -> x.Detail)(
+            match detail' with
+            | Detail.Todo ls ->
+                ls
+                |> List.map (fun x -> x.Content)
+                |> String.concat (Environment.NewLine + Environment.NewLine)
+                |> Detail.Markdown
+            | Detail.Markdown str ->
+                str.Split(Environment.NewLine)
+                |> Seq.filter (String.IsNullOrEmpty >> not)
+                |> Seq.map (fun x -> { Content = x.Trim(); IsDone = false })
+                |> Seq.toList
+                |> Detail.Todo
         )
+        renderMarkdown.Publish false
 
 
     let saveLog () =
-        let updateLog l = 
-            { l with
-                Title = titleF.Value
-                Detail = detail.Value
-                Tags = tags.Value
-                CreatedTime = createdTime() 
-                UpdatedTime = updatedTime()
-                Schedule = schedule.Value
-                Status = status.Value }
-
         match action' with
-        | Action.CreateLog -> logsSvc.CreateLog (date, updateLog Log.DefaultValue)
-        | Action.EditLog log -> logsSvc.ModifyLog (date, updateLog log, false)
+        | Action.CreateLog -> logsSvc.CreateLog (date, logForm.GetValue())
+        | Action.EditLog _ -> logsSvc.ModifyLog (date, logForm.GetValue(), false)
         | Action.DeleteLog log -> logsSvc.ModifyLog (date, log, true)
         |> Observable.ofTask
         |> Observable.subscribe (function
-            | Ok _ -> dialogProps.Close(); onSaved(); statuses.Publish (fun x -> List.append x ["Log changed successfully"])
             | Error e -> statuses.Publish (fun x -> List.append x [string e])
+            | Ok _ ->
+                dialogProps.Close()
+                logsSvc.WriteLogDetailCache None |> ignore
+                onSaved()
+                statuses.Publish (fun x -> List.append x ["Log changed successfully"])
         )
         |> hook.AddDispose
 
 
     hook.AddDisposes [
-        detail.AddLazyCallback (function
+        logsSvc.ReadLogDetailCache()
+        |> Observable.ofTask
+        |> Observable.subscribe detailCache.Publish
+
+        logForm
+
+        logForm.UseFieldValue(fun x -> x.Detail).AddLazyCallback (function
             | Detail.Markdown _ -> ()
             | Detail.Todo ls ->
+                let setStatus = logForm.UseFieldSetter(fun x -> x.Status)
                 if ls.Length > 0 && ls |> Seq.exists (fun x -> not x.IsDone) |> not then
-                    status.Publish Status.Done
+                    setStatus Status.Done
                 else
-                    status.Publish Status.Created)
-        status.AddLazyCallback (function
+                    setStatus Status.Created)
+        logForm.UseFieldValue(fun x -> x.Status).AddLazyCallback (function
             | Status.Done ->
-                match detail.Value with
-                | Detail.Todo ls -> ls |> List.map (fun x -> { x with IsDone = true }) |> Detail.Todo |> detail.Publish
-                | _ -> ()
+                adaptive {
+                    let! detail, setDetail = logForm.UseField(fun x -> x.Detail)
+                    match detail with
+                    | Detail.Todo ls -> ls |> List.map (fun x -> { x with IsDone = true }) |> Detail.Todo |> setDetail
+                    | _ -> ()
+                    return ()
+                }
+                |> AVal.force
             | _ ->
                 ())
+
+        Observable.interval (TimeSpan.FromSeconds 10)
+        |> Observable.subscribe (fun _ ->
+            if isDetailChanged.Value then
+                logForm.UseFieldValue(fun x -> x.Detail)
+                |> AVal.force
+                |> Some
+                |> logsSvc.WriteLogDetailCache
+                |> ignore
+        )
     ]
             
 
@@ -210,11 +193,10 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                     }
                 | _ ->
                     adaptiview(){
-                        let! titleF' = titleF
+                        let! title' = logForm.UseField(fun x -> x.Title)
                         MudTextField'(){
                             Label i18n.App.LogDialog.Title
-                            Value titleF'
-                            ValueChanged titleF.Publish
+                            Value' title'
                             FullWidth true
                             Disabled isDisabled
                         }
@@ -232,26 +214,30 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                     ]
                     childContent [
                         adaptiview(){
-                            let! tags' = tags
+                            let! tags', setTags = logForm.UseField(fun x -> x.Tags)
                             MudChipSet'(){
                                 ReadOnly isDisabled
                                 childContent [
                                     for i, tag in List.indexed tags' do
                                         tagChip isDisabled tag
-                                            (fun _ -> tags.Publish (List.removeAt i))
-                                            (fun t -> tags.Publish (List.removeAt i >> List.insertAt i t))
+                                            (fun _ -> setTags (tags' |> List.removeAt i))
+                                            (fun t -> setTags (tags' |> List.removeAt i |> List.insertAt i t))
                                     if not isDisabled then
                                         if tags'.Length > 0 then
                                             spaceH3
-                                        newTagChip i18n.App.LogDialog.SelectATag (fun t -> (tags'@[t]) |> List.distinct |> tags.Publish)
+                                        newTagChip i18n.App.LogDialog.SelectATag (fun t -> (tags'@[t]) |> List.distinct |> setTags)
                                 ]
                             }
                         }
                         spaceV2
                         adaptiview(){
-                            let! detail' = detail
+                            let! detail', setDetail = logForm.UseField(fun x -> x.Detail)
                             let! isRenderMarkdown = renderMarkdown
                             let isChecked = match detail' with Detail.Todo _ -> true | _ -> false
+
+                            let setDetail x =
+                                isDetailChanged.Publish true
+                                setDetail x
 
                             if isChecked || not isRenderMarkdown then
                                 MudCheckBox'(){
@@ -277,7 +263,7 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                                         let! focused, setFocused = focused |> Adapt.withSetter
                                         textarea(){
                                             value str
-                                            onchange (fun e -> e.Value |> string |> Detail.Markdown |> detail.Publish)
+                                            onchange (fun e -> e.Value |> string |> Detail.Markdown |> setDetail)
                                             autofocus true
                                             placeholder i18n.App.LogDialog.MarkdownPlaceholder
                                             styles [
@@ -297,24 +283,26 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                                 div(){
                                     styles [ style.height (length.perc 100) ]
                                     childContent [
-                                        todoEditor Size.Medium (not isDisabled) isDisabled isDisabled todos (Detail.Todo >> detail.Publish)
+                                        todoEditor Size.Medium (not isDisabled) isDisabled isDisabled todos (Detail.Todo >> setDetail)
                                     ]
                                 }
                         }
                         spaceV4
                         spaceV4
                         adaptiview(){
-                            let! schedule' = schedule
-                            scheduleEditor DateTime.Now schedule' isDisabled schedule.Publish
+                            let! schedule, setSchedule = logForm.UseField(fun x -> x.Schedule)
+
+                            scheduleEditor DateTime.Now schedule isDisabled setSchedule
                             adaptiview(){
-                                let! isDone' = status |> AVal.map ((=) Status.Done)
+                                let! status, setStatus = logForm.UseField(fun x -> x.Status)
+                                let isDone' = status = Status.Done
                                 MudCheckBox'(){
-                                    Label "Mark as done now"
+                                    Label i18n.App.LogDialog.MarkAsDoneNow
                                     Color (if isDone' then Color.Success else Color.Default)
                                     Checked isDone'
                                     CheckedChanged (function
-                                        | true -> status.Publish Status.Done
-                                        | false -> status.Publish Status.Created)
+                                        | true -> setStatus Status.Done
+                                        | false -> setStatus Status.Created)
                                     Disabled isDisabled
                                 }
                             }
@@ -325,8 +313,21 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
             ]
             DialogActions [
                 adaptiview(){
+                    let! cache, setCache = detailCache.WithSetter()
+                    match cache with
+                    | None -> ()
+                    | Some cache ->
+                        MudButton'(){
+                            OnClick (fun _ ->
+                                logForm.UseFieldSetter(fun x -> x.Detail)(cache)
+                                setCache None)
+                            childContent i18n.App.LogDialog.UseLastDetail
+                        }
+                }
+                adaptiview(){
                     let! renderMarkdown' = renderMarkdown
-                    match! detail with
+                    let! detail = logForm.UseFieldValue(fun x -> x.Detail)
+                    match detail with
                     | Detail.Todo _ -> ()
                     | Detail.Markdown _ ->
                         MudIconButton'(){
@@ -340,20 +341,38 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                     OnClick (ignore >> dialogProps.Close)
                     childContent i18n.App.Common.Close
                 }
-                MudButton'(){
-                    Size Size.Small
-                    Variant Variant.Filled
-                    Color (
-                        match action' with
-                        | Action.CreateLog -> Color.Success
-                        | Action.EditLog _ -> Color.Info
-                        | Action.DeleteLog _ -> Color.Warning)
-                    OnClick (fun _ -> saveLog())
-                    childContent (
-                        match action' with
-                        | Action.CreateLog -> i18n.App.Common.Create
-                        | Action.EditLog _ -> i18n.App.Common.Save
-                        | Action.DeleteLog _ -> i18n.App.Common.Delete)
+                adaptiview(){
+                    let! hasChanges = isDetailChanged
+                    if hasChanges then
+                        MudButton'(){
+                            Size Size.Small
+                            OnClick (fun _ ->
+                                logsSvc.WriteLogDetailCache None |> ignore
+                                dialogProps.Close())
+                            childContent i18n.App.LogDialog.Discard
+                        }
+                }
+                adaptiview(){
+                    let! hasChanges = logForm.UseHasChanges()
+                    MudButton'(){
+                        Size Size.Small
+                        Variant Variant.Filled
+                        Color (
+                            match action' with
+                            | Action.CreateLog -> Color.Success
+                            | Action.EditLog _ -> Color.Info
+                            | Action.DeleteLog _ -> Color.Warning)
+                        OnClick (fun _ -> saveLog())
+                        Disabled (
+                            match action' with
+                            | Action.EditLog _ when not hasChanges -> true
+                            | _ -> false)
+                        childContent (
+                            match action' with
+                            | Action.CreateLog -> i18n.App.Common.Create
+                            | Action.EditLog _ -> i18n.App.Common.Save
+                            | Action.DeleteLog _ -> i18n.App.Common.Delete)
+                    }
                 }
             ]
         }

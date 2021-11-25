@@ -38,7 +38,9 @@
       "EndTime": "End time",
       "IsTodo": "Todo",
       "ToDoPlaceholder": "Input something then press enter",
-      "MarkdownPlaceholder": "Input anything you want. It supports markdown + task list."
+      "MarkdownPlaceholder": "Input anything you want. It supports markdown + task list.",
+      "UseLastDetail": "Use last modified detail",
+      "Discard": "Discard"
     },
     "TagsSelector": {
       "Title": "Tags selector",

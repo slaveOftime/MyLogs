@@ -35,10 +35,12 @@ module Utils =
             Path.Combine(this.LocalFolder, "tags.config")
 
 
+        member this.GetLogDetailCacheFile () =
+            Path.Combine(this.LocalFolder, "editing-log-detail.cache")
+
+
 
 type LogsService (settingsSvc: ISettingsService) as this =
-    let mutable logsOfToday = None
-
     let logs = cval<Map<DateOnly, Logs>>(Map.empty)
     let tags = cval<Tags>(Tags.DefaultValue)
 
@@ -275,4 +277,29 @@ type LogsService (settingsSvc: ISettingsService) as this =
 
                 else
                     do! TaskResult.ofError DataIsChanged
+            }
+
+
+        member _.ReadLogDetailCache () =
+            task {
+                let cacheFile = settingsSvc.GetSettings().GetLogDetailCacheFile()
+                return
+                    if File.Exists cacheFile then
+                        try File.ReadAllText cacheFile |> fromJson<Detail> |> Some
+                        with _ -> None
+                    else
+                        None
+            }
+
+        member _.WriteLogDetailCache detail =
+            task {
+                let cacheFile = settingsSvc.GetSettings().GetLogDetailCacheFile()
+                try
+                    match detail with
+                    | None -> File.WriteAllText(cacheFile, "")
+                    | Some detail ->
+                        let content = toJson detail
+                        File.WriteAllText(cacheFile, content)
+                with _ ->
+                    ()
             }

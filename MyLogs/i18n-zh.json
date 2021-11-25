@@ -38,7 +38,9 @@
       "EndTime": "结束时间",
       "IsTodo": "待办事项",
       "ToDoPlaceholder": "输入你想做的事然后按回车",
-      "MarkdownPlaceholder": "输入所想。。。支持markdown格式及扩展的任务清单格式。"
+      "MarkdownPlaceholder": "输入所想。。。支持markdown格式及扩展的任务清单格式。",
+      "UseLastDetail": "使用上次编辑的详情",
+      "Discard": "放弃修改"
     },
     "TagsSelector": {
       "Title": "选择标签",

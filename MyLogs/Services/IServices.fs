@@ -43,6 +43,9 @@ type ILogsService =
     abstract LoadLogTags: unit -> TaskResult<unit, string>
     abstract WriteLogTags: Tag list -> TaskResult<unit, WriteDataError>
 
+    abstract ReadLogDetailCache: unit -> Task<Detail option>
+    abstract WriteLogDetailCache: Detail option -> Task<unit>
+
 
 // =======================================================
 

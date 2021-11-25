@@ -68,7 +68,7 @@ let parseLogs (patterns: ParsePattern list) (logLines: string seq) =
         match logPattern, line, detail with
         | _, Header (pattern, title), _ ->
             tryAppendLog()
-            log <- Some { Log.DefaultValue with Title = title }
+            log <- Some { Log.DefaultValue() with Title = title }
             logPattern <- Some pattern
 
         | Some _, _, Some (Detail.Markdown _) when detailStringBuilder.IsSome ->

@@ -57,7 +57,7 @@
     <PackageReference Include="Fun.I18n.Provider" Version="1.0.1" />
     <PackageReference Include="Markdig" Version="0.26.0" />
     <PackageReference Include="FSharp.SystemTextJson" Version="0.17.4" />
-    <PackageReference Include="Fun.Blazor" Version="1.1.0-beta206" />
+    <PackageReference Include="Fun.Blazor" Version="1.1.0-beta207" />
     <PackageReference Include="MudBlazor" Version="5.2.0" FunBlazorStyle="CE" />
   </ItemGroup>
 </Project>

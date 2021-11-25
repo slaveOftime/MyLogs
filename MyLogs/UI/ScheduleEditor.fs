@@ -13,6 +13,7 @@ open type Styles
 
 let scheduleEditor (date: DateTime) (schedule: Schedule) isDisabled onChanged = html.inject <| fun (hook: IComponentHook, store: IShareStore) ->
     adaptiview(){
+        let! i18n = store.UseI18n()
         let! bgColor = store.UsePreferredBackground()
 
         div(){
@@ -31,7 +32,7 @@ let scheduleEditor (date: DateTime) (schedule: Schedule) isDisabled onChanged = 
                         | _ -> ()
                     )
                     Disabled isDisabled
-                    childContent "Anytime"
+                    childContent i18n.App.Schedule.Anytime
                 }
                 spaceH2
                 MudCheckBox'(){
@@ -42,7 +43,7 @@ let scheduleEditor (date: DateTime) (schedule: Schedule) isDisabled onChanged = 
                         | _ -> ()
                     )
                     Disabled isDisabled
-                    childContent "Alarm"
+                    childContent i18n.App.Schedule.Alarm
                 }
                 spaceH2
                 MudCheckBox'(){
@@ -53,7 +54,7 @@ let scheduleEditor (date: DateTime) (schedule: Schedule) isDisabled onChanged = 
                         | _ -> ()
                     )
                     Disabled isDisabled
-                    childContent "Range"
+                    childContent i18n.App.Schedule.Range
                 }
             ]
         }
@@ -65,7 +66,7 @@ let scheduleEditor (date: DateTime) (schedule: Schedule) isDisabled onChanged = 
                 | Schedule.Anytime -> html.none
                 | Schedule.Alarm x ->
                     MudTimePicker'(){
-                        Label "Alarm on time"
+                        Label i18n.App.LogDialog.AlarmOnTime
                         AmPm true
                         Time (x.ToTimeSpan())
                         TimeChanged (
@@ -83,7 +84,7 @@ let scheduleEditor (date: DateTime) (schedule: Schedule) isDisabled onChanged = 
                         styles (lineStyles())
                         childContent [
                             MudTimePicker'(){
-                                Label "Start time"
+                                Label i18n.App.LogDialog.StartTime
                                 AmPm true
                                 Time (s.ToTimeSpan())
                                 TimeChanged (
@@ -102,7 +103,7 @@ let scheduleEditor (date: DateTime) (schedule: Schedule) isDisabled onChanged = 
                             }
                             spaceH4
                             MudTimePicker'(){
-                                Label "End time"
+                                Label i18n.App.LogDialog.EndTime
                                 AmPm true
                                 Time (e.ToTimeSpan())
                                 TimeChanged (
