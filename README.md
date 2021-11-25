@@ -1,5 +1,7 @@
 # MyLogs
 
+[中文 👈](./README.cn.md)
+
 It can be used as your personal jurnal, learning notes, simple todo app etc.
 
 ![](./Assets/mylogs-on-window11.png)
