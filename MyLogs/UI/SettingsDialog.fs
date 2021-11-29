@@ -15,7 +15,7 @@ let settingsDialog = html.injectWithNoKey (fun (hook: IComponentHook, store: ISh
     let isLoading = cval false
     let settingsForm = new AdaptiveForm<Settings, string>(Settings.DefaultValue())
 
-    settingsForm.AddAalidators((fun x -> x.LocalFolder), false, [
+    settingsForm.AddValidators((fun x -> x.LocalFolder), false, [
         fun _ v ->
             if Directory.Exists v then []
             else [ "Directory is not valid" ]

@@ -23,7 +23,7 @@ let private i18nPath lang =
     with ex ->
         "{}"
 
-let private detaultI18n = Fun.I18n.Provider.Fable.Utils.createI18n I18N (i18nPath Lang.EN)
+let private detaultI18n = I18N (i18nPath Lang.EN)
 
 
 let private lightTheme () =
