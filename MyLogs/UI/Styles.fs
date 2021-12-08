@@ -6,7 +6,9 @@ open Fun.Blazor
 open MudBlazor
 
 
-let css (str: string) = html.raw $"""
+let css (str: string) =
+    html.raw
+        $"""
 <style>
 {str}
 </style>
@@ -34,7 +36,8 @@ let getWindowSize width =
 
 
 let mudStylesOverride bgColor =
-    css $"""
+    css
+        $"""
         * {{
             text-shadow: inherit;
         }}
@@ -76,14 +79,12 @@ let mudStylesOverride bgColor =
 
 type Styles =
 
-    static member shadowStyles (?bgColor: string) =
+    static member shadowStyles(?bgColor: string) =
         let bgColor = defaultArg bgColor "rgba(0, 0, 0, 0.2)"
-        [
-            style.boxShadow $"10px 20px 15px {bgColor}"
-        ]
+        [ style.boxShadow $"10px 20px 15px {bgColor}" ]
 
 
-    static member blurStyles (bgColor: string, ?blur: int) =
+    static member blurStyles(bgColor: string, ?blur: int) =
         let blur = defaultArg blur 10
         [
             style.backgroundColor bgColor
@@ -92,11 +93,10 @@ type Styles =
         ]
 
 
-    static member lineStyles () =
+    static member lineStyles() =
         [
             style.displayFlex
             style.alignItemsCenter
             style.flexDirectionRow
             style.alignContentStretch
         ]
-

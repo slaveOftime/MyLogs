@@ -12,37 +12,38 @@ open MyLogs.Core
 [<AutoOpen>]
 module Utils =
     type Settings with
-        member this.GetLogsFile (date: DateOnly) =
+
+        member this.GetLogsFile(date: DateOnly) =
             let myLogsFolder = Path.Combine(this.LocalFolder, "MyLogs")
-        
+
             if Directory.Exists myLogsFolder |> not then
                 Directory.CreateDirectory myLogsFolder |> ignore
 
             Path.Combine(myLogsFolder, date.ToString("yyyy-MM-dd") + ".md")
 
 
-        member this.GetLogsOfTodayFile () =
+        member this.GetLogsOfTodayFile() =
             if Directory.Exists this.LocalFolder |> not then
                 Directory.CreateDirectory this.LocalFolder |> ignore
 
             Path.Combine(this.LocalFolder, "logs-of-today.md")
 
 
-        member this.GetLogTagsFile () =
+        member this.GetLogTagsFile() =
             if Directory.Exists this.LocalFolder |> not then
                 Directory.CreateDirectory this.LocalFolder |> ignore
 
             Path.Combine(this.LocalFolder, "tags.config")
 
 
-        member this.GetLogDetailCacheFile () =
+        member this.GetLogDetailCacheFile() =
             Path.Combine(this.LocalFolder, "editing-log-detail.cache")
 
 
 
-type LogsService (settingsSvc: ISettingsService) as this =
-    let logs = cval<Map<DateOnly, Logs>>(Map.empty)
-    let tags = cval<Tags>(Tags.DefaultValue)
+type LogsService(settingsSvc: ISettingsService) as this =
+    let logs = cval<Map<DateOnly, Logs>> (Map.empty)
+    let tags = cval<Tags> (Tags.DefaultValue)
 
 
     let readLogs logsFile =
@@ -67,8 +68,7 @@ type LogsService (settingsSvc: ISettingsService) as this =
             File.WriteAllText(file, logsString)
 
     let reloadAfterWriteFor date =
-        (this :> ILogsService).LoadLogs date
-        |> TaskResult.mapError WriteDataError.FailedToRead
+        (this :> ILogsService).LoadLogs date |> TaskResult.mapError WriteDataError.FailedToRead
 
 
     do
@@ -77,8 +77,8 @@ type LogsService (settingsSvc: ISettingsService) as this =
         |> Observable.add (fun _ ->
             taskResult {
                 let settings = settingsSvc.GetSettings()
-                
-                for KeyValue(date, logs) in logs.Value do
+
+                for KeyValue (date, logs) in logs.Value do
                     let logsFile = settings.GetLogsFile date
                     let logsFileInfo = FileInfo logsFile
                     if logsFileInfo.LastWriteTime > logs.LastModifiedTime then
@@ -89,7 +89,8 @@ type LogsService (settingsSvc: ISettingsService) as this =
                 if tagsFileInfo.LastWriteTime > tags.Value.LastModifiedTime then
                     do! (this :> ILogsService).LoadLogTags()
 
-            } |> ignore
+            }
+            |> ignore
         )
 
 
@@ -98,46 +99,45 @@ type LogsService (settingsSvc: ISettingsService) as this =
         member _.Tags = tags
 
 
-        member _.ClearLogsCache () = logs.Publish Map.empty
+        member _.ClearLogsCache() = logs.Publish Map.empty
 
 
         member _.LoadLogs date =
             taskResult {
                 let settings = settingsSvc.GetSettings()
-                
+
                 let logFile = settings.GetLogsFile date
                 let logFileInfo = FileInfo logFile
 
                 if logFileInfo.Exists then
-                    logs.Publish (Map.add date {
-                        LastModifiedTime = logFileInfo.LastWriteTime
-                        Logs = readLogs logFile
-                    })
+                    logs.Publish(
+                        Map.add
+                            date
+                            {
+                                LastModifiedTime = logFileInfo.LastWriteTime
+                                Logs = readLogs logFile
+                            }
+                    )
 
                 else
-                    logs.Publish (Map.add date {
-                        LastModifiedTime = DateTime.Now
-                        Logs = []
-                    })
+                    logs.Publish(Map.add date { LastModifiedTime = DateTime.Now; Logs = [] })
             }
 
-        
-        member _.CreateLog (date, log) =
+
+        member _.CreateLog(date, log) =
             taskResult {
                 let settings = settingsSvc.GetSettings()
 
                 let logsFile = settings.GetLogsFile date
                 match logs.Value |> Map.tryFind date with
-                | None ->
-                    appendLog logsFile log
-                | Some logs ->
-                    do! writeLogs logsFile { logs with Logs = log::logs.Logs }
+                | None -> appendLog logsFile log
+                | Some logs -> do! writeLogs logsFile { logs with Logs = log :: logs.Logs }
 
                 do! reloadAfterWriteFor date
             }
-        
-        
-        member _.ModifyLog (date, log, isDelete) =
+
+
+        member _.ModifyLog(date, log, isDelete) =
             taskResult {
                 let log =
                     { log with
@@ -146,19 +146,22 @@ type LogsService (settingsSvc: ISettingsService) as this =
                             match log.Detail with
                             | Detail.Markdown _ -> log.Status
                             | Detail.Todo ls ->
-                                if ls |> Seq.exists (fun x -> not x.IsDone) |> not then Status.Done
-                                else Status.Created }
+                                if ls |> Seq.exists (fun x -> not x.IsDone) |> not then
+                                    Status.Done
+                                else
+                                    Status.Created
+                    }
 
                 let settings = settingsSvc.GetSettings()
-                                
-                let modifyLogAt index (logs: Logs) = {
-                    logs with
+
+                let modifyLogAt index (logs: Logs) =
+                    { logs with
                         Logs =
                             if isDelete then
                                 logs.Logs |> List.removeAt index
                             else
                                 logs.Logs |> List.removeAt index |> List.insertAt index log
-                }
+                    }
 
                 match Map.tryFind date logs.Value with
                 | None -> ()
@@ -172,37 +175,36 @@ type LogsService (settingsSvc: ISettingsService) as this =
             }
 
 
-        member _.MarkLogAsDone (date, log) =
+        member _.MarkLogAsDone(date, log) =
             taskResult {
                 let settings = settingsSvc.GetSettings()
-                
+
                 let newLog =
                     { log with
                         Status = Status.Done
                         Detail =
                             match log.Detail with
                             | Detail.Markdown _ -> log.Detail
-                            | Detail.Todo ls -> ls |> List.map (fun x -> { x with IsDone = true }) |> Detail.Todo }
+                            | Detail.Todo ls -> ls |> List.map (fun x -> { x with IsDone = true }) |> Detail.Todo
+                    }
 
                 match logs.Value |> Map.tryFind date with
                 | None -> ()
                 | Some logs ->
                     let newLogs =
                         { logs with
-                            Logs =
-                                logs.Logs
-                                |> List.filter (fun x -> x.Id <> log.Id)
-                                |> fun ls -> ls@[ newLog ] }
+                            Logs = logs.Logs |> List.filter (fun x -> x.Id <> log.Id) |> fun ls -> ls @ [ newLog ]
+                        }
 
                     do! writeLogs (settings.GetLogsFile date) newLogs
                     do! reloadAfterWriteFor date
             }
 
 
-        member _.OrderLog (sourceDate, sourceLog, targetDate, targetLog) =
+        member _.OrderLog(sourceDate, sourceLog, targetDate, targetLog) =
             taskResult {
                 let settings = settingsSvc.GetSettings()
-                    
+
                 do!
                     option {
                         let! sourceLogs = logs.Value |> Map.tryFind sourceDate
@@ -210,52 +212,58 @@ type LogsService (settingsSvc: ISettingsService) as this =
 
                         let! sourceIndex = sourceLogs.Logs |> List.tryFindIndex (fun x -> x.Id = sourceLog.Id)
                         let! targetIndex = targetLogs.Logs |> List.tryFindIndex (fun x -> x.Id = targetLog.Id)
-                        
+
                         let targetLogsFile = settings.GetLogsFile targetDate
                         let sourceLogsFile = settings.GetLogsFile sourceDate
-                            
-                        let newTargetLogs = { targetLogs with Logs = targetLogs.Logs |> List.insertAt targetIndex sourceLog }
-                        
-                        return taskResult {
-                            if sourceDate <> targetDate then
-                                let newSourceLogs = { sourceLogs with Logs = sourceLogs.Logs |> List.removeAt sourceIndex }
-                                do! writeLogs targetLogsFile newTargetLogs
-                                do! writeLogs sourceLogsFile newSourceLogs
-                                do! reloadAfterWriteFor targetDate
-                                do! reloadAfterWriteFor sourceDate
-                            else
-                                let newTargetLogs =
-                                    { newTargetLogs with
-                                        Logs =
-                                            newTargetLogs.Logs
-                                            |> List.removeAt (
-                                                if sourceIndex > targetIndex
-                                                then sourceIndex + 1
-                                                else sourceIndex) }
-                                do! writeLogs targetLogsFile newTargetLogs
-                                do! reloadAfterWriteFor targetDate
-                        }
+
+                        let newTargetLogs =
+                            { targetLogs with
+                                Logs = targetLogs.Logs |> List.insertAt targetIndex sourceLog
+                            }
+
+                        return
+                            taskResult {
+                                if sourceDate <> targetDate then
+                                    let newSourceLogs =
+                                        { sourceLogs with
+                                            Logs = sourceLogs.Logs |> List.removeAt sourceIndex
+                                        }
+                                    do! writeLogs targetLogsFile newTargetLogs
+                                    do! writeLogs sourceLogsFile newSourceLogs
+                                    do! reloadAfterWriteFor targetDate
+                                    do! reloadAfterWriteFor sourceDate
+                                else
+                                    let newTargetLogs =
+                                        { newTargetLogs with
+                                            Logs =
+                                                newTargetLogs.Logs
+                                                |> List.removeAt (if sourceIndex > targetIndex then sourceIndex + 1 else sourceIndex)
+                                        }
+                                    do! writeLogs targetLogsFile newTargetLogs
+                                    do! reloadAfterWriteFor targetDate
+                            }
                     }
-                    |> Option.defaultWith (fun _ -> TaskResult.ofSuccess())
+                    |> Option.defaultWith (fun _ -> TaskResult.ofSuccess ())
             }
 
 
-        member _.LoadLogTags () =
+        member _.LoadLogTags() =
             taskResult {
                 let settings = settingsSvc.GetSettings()
-            
+
                 let tagsFile = settings.GetLogTagsFile()
                 let tagsFileInfo = FileInfo tagsFile
 
                 let! tags' =
                     if File.Exists tagsFile then
                         try
-                            TaskResult.retn {
-                                LastModifiedTime =  tagsFileInfo.LastWriteTime
-                                Tags = File.ReadAllText tagsFile |> fromJson<Tag list>
-                            }
-                        with ex ->
-                            TaskResult.ofError ex.Message
+                            TaskResult.retn
+                                {
+                                    LastModifiedTime = tagsFileInfo.LastWriteTime
+                                    Tags = File.ReadAllText tagsFile |> fromJson<Tag list>
+                                }
+                        with
+                            | ex -> TaskResult.ofError ex.Message
                     else
                         TaskResult.retn { LastModifiedTime = DateTime.Now; Tags = [] }
 
@@ -266,7 +274,7 @@ type LogsService (settingsSvc: ISettingsService) as this =
         member _.WriteLogTags tags' =
             taskResult {
                 let settings = settingsSvc.GetSettings()
-            
+
                 let tagsFile = settings.GetLogTagsFile()
                 let tagsFileInfo = FileInfo tagsFile
 
@@ -280,13 +288,15 @@ type LogsService (settingsSvc: ISettingsService) as this =
             }
 
 
-        member _.ReadLogDetailCache () =
+        member _.ReadLogDetailCache() =
             task {
                 let cacheFile = settingsSvc.GetSettings().GetLogDetailCacheFile()
                 return
                     if File.Exists cacheFile then
-                        try File.ReadAllText cacheFile |> fromJson<Detail> |> Some
-                        with _ -> None
+                        try
+                            File.ReadAllText cacheFile |> fromJson<Detail> |> Some
+                        with
+                            | _ -> None
                     else
                         None
             }
@@ -300,6 +310,6 @@ type LogsService (settingsSvc: ISettingsService) as this =
                     | Some detail ->
                         let content = toJson detail
                         File.WriteAllText(cacheFile, content)
-                with _ ->
-                    ()
+                with
+                    | _ -> ()
             }

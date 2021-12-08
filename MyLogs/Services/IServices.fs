@@ -16,9 +16,11 @@ type IPlatformService =
     abstract GetSize: unit -> float * float
     abstract ShowWindowController: unit -> unit
     abstract HideWindowController: unit -> unit
-    
-    [<CLIEvent>] abstract Activated: IEvent<System.EventHandler, System.EventArgs>
-    [<CLIEvent>] abstract Deactivated: IEvent<System.EventHandler, System.EventArgs>
+
+    [<CLIEvent>]
+    abstract Activated: IEvent<System.EventHandler, System.EventArgs>
+    [<CLIEvent>]
+    abstract Deactivated: IEvent<System.EventHandler, System.EventArgs>
 
 
 type ISettingsService =
@@ -38,7 +40,7 @@ type ILogsService =
     abstract CreateLog: DateOnly * Log -> TaskResult<unit, WriteDataError>
     abstract ModifyLog: DateOnly * Log * isDelete: bool -> TaskResult<unit, WriteDataError>
     abstract MarkLogAsDone: DateOnly * Log -> TaskResult<unit, WriteDataError>
-    abstract OrderLog: sourceDate:DateOnly * sourceLog: Log * targetDate: DateOnly * targetLog: Log -> TaskResult<unit, WriteDataError>
+    abstract OrderLog: sourceDate: DateOnly * sourceLog: Log * targetDate: DateOnly * targetLog: Log -> TaskResult<unit, WriteDataError>
 
     abstract LoadLogTags: unit -> TaskResult<unit, string>
     abstract WriteLogTags: Tag list -> TaskResult<unit, WriteDataError>
@@ -54,4 +56,3 @@ type WriteDataError =
     | FailedToRead of string
     | SettingsError of string
     | DataIsChanged
-

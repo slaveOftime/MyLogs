@@ -21,9 +21,11 @@ type Theme =
     | Light of MudTheme
 
 
-type Filter = {
-    Tags: string list
-} with
+type Filter =
+    {
+        Tags: string list
+    }
+
     static member DefaultValue = { Tags = [] }
 
 

@@ -28,16 +28,20 @@ let getMonday () =
 
 let (|RegPattern|_|) (reg: Regex) (str: string) =
     let result = reg.Match str
-    if result.Success then Some (result, str.Substring(result.Value.Length).Trim())
-    else None
+    if result.Success then
+        Some(result, str.Substring(result.Value.Length).Trim())
+    else
+        None
 
 
 let (|RegPatterns|_|) (regs: Regex list) (str: string) =
     regs
     |> Seq.tryPick (fun reg ->
         let result = reg.Match str
-        if result.Success then Some (result, str.Substring(result.Value.Length).Trim())
-        else None
+        if result.Success then
+            Some(result, str.Substring(result.Value.Length).Trim())
+        else
+            None
     )
 
 
@@ -54,7 +58,8 @@ let (|DateTimeOffset|_|) (str: string) =
 
 
 
-let trim length (x: string) = if x.Length > length then x.Substring(0, length) else x
+let trim length (x: string) =
+    if x.Length > length then x.Substring(0, length) else x
 
 
 let trimLines length (x: string) =
@@ -63,12 +68,10 @@ let trimLines length (x: string) =
         let mutable count = 0
         ls
         |> Seq.takeWhile (fun x ->
-            if String.IsNullOrEmpty x |> not then
-                count <- count + 1
-            count <= length)
-        |> Seq.fold
-            (fun (s: StringBuilder) x -> s.AppendLine(x))
-            (StringBuilder())
+            if String.IsNullOrEmpty x |> not then count <- count + 1
+            count <= length
+        )
+        |> Seq.fold (fun (s: StringBuilder) x -> s.AppendLine(x)) (StringBuilder())
         |> fun x -> x.AppendLine().AppendLine("...")
         |> string
     else
@@ -76,16 +79,16 @@ let trimLines length (x: string) =
 
 
 let isIOS =
-    #if __IOS__
+#if __IOS__
     true
-    #else
+#else
     false
-    #endif
+#endif
 
 
 let isAndroid =
-    #if __ANDROID__
+#if __ANDROID__
     true
-    #else
+#else
     false
-    #endif
+#endif
