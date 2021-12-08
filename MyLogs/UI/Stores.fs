@@ -4,7 +4,6 @@ module MyLogs.UI.Stores
 open System
 open System.IO
 open FSharp.Data.Adaptive
-open FSharp.Control.Reactive
 open Fun.Blazor
 open MyLogs.Core
 open MyLogs.Services
@@ -20,7 +19,7 @@ let private i18nPath lang =
     try
         let assembly = Reflection.Assembly.GetExecutingAssembly()
         use stream =
-            assembly.GetManifestResourceStream($"MyLogs.i18n-{lang.ToString().ToLower()}.json")
+            assembly.GetManifestResourceStream($"MyLogs.UI.i18n-{lang.ToString().ToLower()}.json")
         use reader = new StreamReader(stream)
         reader.ReadToEnd()
     with
