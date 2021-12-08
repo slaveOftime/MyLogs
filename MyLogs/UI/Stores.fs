@@ -12,8 +12,7 @@ open MudBlazor
 
 
 [<Literal>]
-let I18NTemplate =
-    "C:\Users\woo\Documents\Code\GitPrivate\MyLogs\MyLogs\i18n-en.json" //__SOURCE_DIRECTORY__ + "\..\i18n-en.json"
+let I18NTemplate = __SOURCE_DIRECTORY__ + "/i18n-en.json"
 
 type I18N = Fun.I18n.Provider.I18nProvider<I18NTemplate, false>
 

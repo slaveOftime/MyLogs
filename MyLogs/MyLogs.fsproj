@@ -13,10 +13,10 @@
     <EmbeddedResource Remove="Properties\**" />
   </ItemGroup>
   <ItemGroup>
-    <Content Remove="i18n-en.json" />
-    <Content Remove="i18n-zh.json" />
-    <EmbeddedResource Include="i18n-en.json" />
-    <EmbeddedResource Include="i18n-zh.json">
+    <Content Remove="UI\i18n-en.json" />
+    <Content Remove="UI\i18n-zh.json" />
+    <EmbeddedResource Include="UI\i18n-en.json" />
+    <EmbeddedResource Include="UI\i18n-zh.json">
       <DependentUpon>i18n-en.json</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
