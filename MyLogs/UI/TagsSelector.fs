@@ -210,7 +210,7 @@ let tagsSelector onClose onSelect =
                                             style.alignContentStretch
                                         ]
                                         childContent [
-                                            MudTextFieldString'() {
+                                            MudTextField'() {
                                                 Value tag.Name
                                                 ValueChanged(fun x -> { tag with Name = x } |> Some |> editingTag.Publish)
                                                 FullWidth true

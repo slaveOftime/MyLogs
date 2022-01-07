@@ -71,7 +71,7 @@ let settingsDialog =
                             childContent [
                                 adaptiview () {
                                     let! (localPath, setLocalPath), errors = settingsForm.UseFieldWithErrors(fun x -> x.LocalFolder)
-                                    MudTextFieldString'() {
+                                    MudTextField'() {
                                         Label i18n.App.Settings.LocalFolder
                                         Value localPath
                                         ValueChanged setLocalPath
