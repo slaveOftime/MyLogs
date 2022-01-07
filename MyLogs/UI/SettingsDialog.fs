@@ -19,16 +19,11 @@ let settingsDialog =
                                snackbar: ISnackbar,
                                dialog: IDialogService) ->
         let isLoading = cval false
-        let settingsForm = new AdaptiveForm<Settings, string>(Settings.DefaultValue())
 
-        settingsForm.AddValidators(
-            (fun x -> x.LocalFolder),
-            false,
-            [
-                fun _ v -> if Directory.Exists v then [] else [ "Directory is not valid" ]
-            ]
-        )
-        |> ignore
+        let settingsForm =
+            hook
+                .UseAdaptiveForm<Settings, string>(Settings.DefaultValue())
+                .AddValidators((fun x -> x.LocalFolder), false, [ fun _ v -> if Directory.Exists v then [] else [ "Directory is not valid" ] ])
 
         let saveSettings close =
             isLoading.Publish true
@@ -45,7 +40,6 @@ let settingsDialog =
             )
             |> hook.AddDispose
 
-        hook.AddDispose settingsForm
 
         hook.OnFirstAfterRender.Add <| fun _ -> settingsSvc.GetSettings() |> settingsForm.SetValue
 
@@ -54,8 +48,7 @@ let settingsDialog =
             let! i18n = store.UseI18n()
             let! windowSize = store.UseWindowSize()
 
-            let dialogOptions =
-                DialogOptions(FullScreen = (windowSize = ExtraSmall || windowSize = Small))
+            let dialogOptions = DialogOptions(FullScreen = (windowSize = ExtraSmall || windowSize = Small))
 
             let dialogBody (props: FunDialogProps) =
                 MudDialog'() {

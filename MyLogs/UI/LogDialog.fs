@@ -99,7 +99,7 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
         let isDetailChanged = cval false
 
         let logForm =
-            new AdaptiveForm<_, string>(
+            hook.UseAdaptiveForm<_, string>(
                 match action' with
                 | EditLog l
                 | DeleteLog l -> l
@@ -149,8 +149,6 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
 
         hook.AddDisposes [
             logsSvc.ReadLogDetailCache() |> Observable.ofTask |> Observable.subscribe detailCache.Publish
-
-            logForm
 
             logForm
                 .UseFieldValue(fun x -> x.Detail)
