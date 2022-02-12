@@ -351,7 +351,7 @@ let logsDaysView (days: int) =
                             div {
                                 style'' {
                                     height "100%"
-                                    flex 1
+                                    flexGrow 1
                                     overflowHidden
                                     positionRelative
                                     displayFlex
