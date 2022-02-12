@@ -132,7 +132,7 @@ let app =
                         alignItemsStretch
                         height "100%"
                         overflowHidden
-                        blurStyles bgColor
+                        blurStyles bgColor 10
                     }
                     MudThemeProvider'() { Theme theme }
                     MudDialogProvider'() { DisableBackdropClick true }

@@ -103,19 +103,8 @@ let private dayHeader (date: DateOnly) days isToday =
                         fontSize 14
                         textAlignCenter
                         width "100%"
-                        // TODO
-                        //padding (
-                        //    length.px 12,
-                        //    length.px (if showNext then 0 else 12),
-                        //    length.px 12,
-                        //    length.px (if showPreview then 0 else 12)
-                        //)
-                        //margin (
-                        //    length.px 0,
-                        //    length.px (if showNext then -12 else 0),
-                        //    length.px 0,
-                        //    length.px (if showPreview then -12 else 0)
-                        //)
+                        padding 12 (if showNext then 0 else 12) 12 (if showPreview then 0 else 12)
+                        margin 0 (if showNext then -12 else 0) 0 (if showPreview then -12 else 0)
                         color (
                             if isToday then
                                 string theme.Palette.TextPrimary
@@ -205,7 +194,6 @@ let logsDaysView (days: int) =
              hook: IComponentHook,
              logsSvc: ILogsService,
              settingsSvc: ISettingsService,
-             platformSvc: IPlatformService,
              dialog: IDialogService,
              snackbar: ISnackbar) ->
             let startTime = store.UseStartTime()
@@ -369,18 +357,17 @@ let logsDaysView (days: int) =
                                     displayFlex
                                     flexDirectionColumn
                                     alignItemsStretch
-                                // TODO
-                                //if isToday then
-                                //    style.boxShadow $"0 0 15px {(Utilities.MudColor(bgColor).SetAlpha(0.6).ChangeLightness(0.5).ToString())}"
-                                //    yield! blurStyles (Utilities.MudColor(bgColor).SetAlpha(0.3).ChangeLightness(0.2).ToString(), 20)
-                                //elif date.DayOfWeek = DayOfWeek.Saturday || date.DayOfWeek = DayOfWeek.Sunday then
-                                //    style.backgroundColor (Utilities.MudColor(bgColor).SetAlpha(0.15).ChangeLightness(0.08).ToString())
-                                //if indexOfWeek <> 6 then
-                                //    style.borderRight (
-                                //        length.px 1,
-                                //        borderStyle.dashed,
-                                //        (Utilities.MudColor(bgColor).SetAlpha(0.4).ChangeLightness(0.3).ToString())
-                                //    )
+                                    if isToday then
+                                        css'' {
+                                            boxShadow $"0 0 15px {(Utilities.MudColor(bgColor).SetAlpha(0.6).ChangeLightness(0.5).ToString())}"
+                                            blurStyles (Utilities.MudColor(bgColor).SetAlpha(0.3).ChangeLightness(0.2).ToString()) 20
+                                        }
+                                    elif date.DayOfWeek = DayOfWeek.Saturday || date.DayOfWeek = DayOfWeek.Sunday then
+                                        css'' { backgroundColor (Utilities.MudColor(bgColor).SetAlpha(0.15).ChangeLightness(0.08).ToString()) }
+                                    if indexOfWeek <> 6 then
+                                        css'' {
+                                            borderRight $"1px dashed {Utilities.MudColor(bgColor).SetAlpha(0.4).ChangeLightness(0.3).ToString()}"
+                                        }
                                 }
                                 ondblclick (fun _ ->
                                     dialog.Show(
@@ -427,10 +414,10 @@ let logsDaysView (days: int) =
                                                 elif isToday then 1.0
                                                 else 0.95
                                             )
-                                            if isMouseEnterFinal = indexOfWeek || isToday || days = 1 then overflowYAuto
-                                        // TODO
-                                        //else
-                                        //    style.overflowHidden
+                                            if isMouseEnterFinal = indexOfWeek || isToday || days = 1 then
+                                                css'' { overflowYAuto }
+                                            else
+                                                css'' { overflowHidden }
                                         }
                                         onmousemove (fun _ -> isMouseEnter.Publish indexOfWeek)
                                         stopPropagation "ondrop" true

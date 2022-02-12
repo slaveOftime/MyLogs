@@ -311,12 +311,11 @@ let logItem (date: DateOnly, log: Log) onSaved =
                         fontWeight 100
                         positionRelative
                         color (string theme.Palette.TextPrimary)
-                        // TODO
-                        //match tag with
-                        //| None when isActive -> style.border (length.px 4, borderStyle.solid, activeBorderColor defaultColor)
-                        //| None -> style.borderBottom (length.px 4, borderStyle.solid, normalBorderColor defaultColor)
-                        //| Some t when isActive -> style.border ("4px", borderStyle.solid, activeBorderColor t.Color)
-                        //| Some t -> style.borderBottom (length.px 4, borderStyle.solid, normalBorderColor t.Color)
+                        match tag with
+                        | None when isActive -> css'' { border $"4px solid {activeBorderColor defaultColor}" }
+                        | None -> css'' { borderBottom $"4px solid {normalBorderColor defaultColor}" }
+                        | Some t when isActive -> css'' { border $"4px solid {activeBorderColor t.Color}" }
+                        | Some t -> css'' { borderBottom $"4px solid {normalBorderColor t.Color}" }
                     }
                     ondblclick (fun _ ->
                         match log.Detail with

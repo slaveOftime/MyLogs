@@ -77,9 +77,10 @@ let mudStylesOverride bgColor =
     """
 
 
+open Fun.Css
 open Fun.Css.Internal
 
-type StyleBuilder with
+type CssBuilder with
 
     [<CustomOperation("lineStyles")>]
     member inline this.lineStyles([<InlineIfLambda>] comb: CombineKeyValue) =
@@ -96,9 +97,9 @@ type StyleBuilder with
 
 
     [<CustomOperation("blurStyles")>]
-    member inline this.blurStyles([<InlineIfLambda>] comb: CombineKeyValue, bgColor: string, ?blur: int) =
-        let blur = defaultArg blur 10
-        this.backgroundColor (comb, bgColor)
+    member inline _.blurStyles([<InlineIfLambda>] comb: CombineKeyValue, bgColor: string, blur: int) =
+        comb
+        &&& css'' { backgroundColor bgColor }
         &&& Fun.Css.Internal.CombineKeyValue(fun sb ->
             sb
                 .Append("-webkit-backdrop-filter: ")

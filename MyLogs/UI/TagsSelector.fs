@@ -219,7 +219,7 @@ let tagsSelector onClose onSelect =
                                             editingTag.Publish None
                                             saveTags (Map.add tag.Name tag tagsMap.Value)
                                         )
-                                        style'' { padding "0 0 4px 0" }
+                                        style'' { padding "" "" "" "" } // "0 0 4px 0" }
                                     }
                                     spaceH1
                                     MudIconButton'() {

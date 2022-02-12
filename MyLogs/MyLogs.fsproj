@@ -53,10 +53,12 @@
   <ItemGroup>
     <PackageReference Include="BrowserInterop" Version="1.1.2" />
     <PackageReference Include="FSharp.Core" Version="6.0.3" />
-    <PackageReference Include="Fun.Blazor" Version="2.0.0-beta006" />
     <PackageReference Include="Fun.I18n.Provider" Version="1.0.3" />
     <PackageReference Include="Markdig" Version="0.27.0" />
     <PackageReference Include="FSharp.SystemTextJson" Version="0.17.4" />
     <PackageReference Include="MudBlazor" Version="6.0.6" FunBlazorStyle="CE" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Fun.Blazor\Fun.Blazor\Fun.Blazor.fsproj" />
   </ItemGroup>
 </Project>

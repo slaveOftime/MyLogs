@@ -217,15 +217,14 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                             overflowHidden
                             displayFlex
                             flexDirectionColumn
-                            height "100%"
                             // TODO
-                            //CombineKeyValue(fun comb ->
-                            //    comb
-                            //    //if dialogProps.Options.FullScreen = Nullable true then
-                            //        //style''.height (comb, "100%") |> ignore
-                            //    //else
-                            //    //    style''.maxHeight (comb, "70vh") &&& style''.width (comb, 720)
-                            //)
+                            if dialogProps.Options.FullScreen = Nullable true then
+                                css'' { height "100%" }
+                            else
+                                css'' {
+                                    width 720
+                                    maxHeight "70vh"
+                                }
                         }
                         adaptiview () {
                             let! tags', setTags = logForm.UseField(fun x -> x.Tags)

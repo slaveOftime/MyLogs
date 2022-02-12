@@ -224,7 +224,7 @@ let bottomToolbar =
                     flexShrink 0
                     padding "10px 15px"
                     lineStyles
-                    blurStyles (bgColor.SetAlpha(bgColor.APercentage + 0.2).ChangeLightness(0.15).ToString())
+                    blurStyles (bgColor.SetAlpha(bgColor.APercentage + 0.2).ChangeLightness(0.15).ToString()) 10
                 }
                 MudDatePicker'() {
                     style'' {
@@ -300,7 +300,7 @@ let topToolbar =
                             Utilities.MudColor(bgColor).SetAlpha(bgAlpha + 0.2).ChangeLightness(0.15).ToString()
                         else
                             Utilities.MudColor(bgColor).SetAlpha(0.30).ToString()
-                    )
+                    ) 10
                 }
                 onclick (fun _ -> isAvtivate.Publish true)
                 if not (windowSize = ExtraSmall || windowSize = Small) then
