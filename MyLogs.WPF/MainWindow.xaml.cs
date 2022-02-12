@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Fun.Blazor;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
 using MudBlazor.Services;
 using MyLogs.Services;
@@ -38,7 +39,8 @@ namespace MyLogs.WPF
                 var serviceCollection = new ServiceCollection();
                 serviceCollection
                     .AddBlazorWebView()
-                    .AddFunBlazorServer()
+                    .AddScoped<IShareStore, ShareStore>()
+                    .AddScoped<IGlobalStore, GlobalStore>()
                     .AddMudServices()
                     .AddSingleton<ILogsService, LogsService>()
                     .AddSingleton<ISettingsService, SettingsService>()
