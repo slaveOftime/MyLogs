@@ -16,7 +16,7 @@ type FunDialog() =
     member val MudDialogInstance = Unchecked.defaultof<MudDialogInstance> with get, set
 
     [<Parameter>]
-    member val RenderFn = Unchecked.defaultof<FunDialogProps -> Bolero.Node> with get, set
+    member val RenderFn = Unchecked.defaultof<FunDialogProps -> NodeRenderFragment> with get, set
 
     member this.CloseDialog() =
         this.InvokeAsync(fun _ -> this.MudDialogInstance.Close()) |> ignore
@@ -32,15 +32,15 @@ type FunDialog() =
 
 type IDialogService with
 
-    member this.Show(title, render: FunDialogProps -> Bolero.Node, ?options) =
+    member this.Show(title, render: FunDialogProps -> NodeRenderFragment, ?options) =
         let options = options |> Option.defaultWith (fun _ -> DialogOptions())
         let parameters = DialogParameters()
         parameters.Add("RenderFn", render)
         this.Show<FunDialog>(title, parameters, options)
 
-    member this.Show(title, render: FunDialogProps -> Bolero.Node) =
+    member this.Show(title, render: FunDialogProps -> NodeRenderFragment) =
         this.Show(title, render, DialogOptions()) |> ignore
 
-    member this.Show(render: FunDialogProps -> Bolero.Node) = this.Show("", render, DialogOptions()) |> ignore
+    member this.Show(render: FunDialogProps -> NodeRenderFragment) = this.Show("", render, DialogOptions()) |> ignore
 
-    member this.Show(options, render: FunDialogProps -> Bolero.Node) = this.Show("", render, options) |> ignore
+    member this.Show(options, render: FunDialogProps -> NodeRenderFragment) = this.Show("", render, options) |> ignore

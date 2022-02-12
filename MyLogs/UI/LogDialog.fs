@@ -4,13 +4,11 @@ module MyLogs.UI.LogDialog
 open System
 open FSharp.Data.Adaptive
 open FSharp.Control.Reactive
-open Feliz
 open Fun.Blazor
+open Fun.Css.Internal
 open MudBlazor
 open MyLogs.Core
 open MyLogs.Services
-
-open type Styles
 
 
 type Action =
@@ -20,57 +18,55 @@ type Action =
 
 
 let todoEditor size' showInput isDisabled disableCheckbox (todos: TodoItem list) onChanged =
-    html.inject
-    <| fun (store: IShareStore) ->
+    html.inject (fun (store: IShareStore) ->
         adaptiview () {
             let! i18n = store.UseI18n()
-            div () {
-                childContent [
+            div {
+                fragment {
                     for index, item in List.indexed todos do
-                        div () {
-                            styles [
-                                yield! lineStyles ()
+                        div {
+                            style'' {
+                                lineStyles
                                 if size' = Size.Small && (showInput || index < todos.Length - 1) then
-                                    style.marginBottom -18
-                            ]
-                            childContent [
-                                MudCheckBox'() {
-                                    Checked item.IsDone
-                                    CheckedChanged(fun x -> todos |> List.updateAt index { item with IsDone = x } |> onChanged)
-                                    Size size'
-                                    Disabled disableCheckbox
-                                }
-                                adaptiview () {
-                                    let! content', setContent = cval(item.Content).WithSetter()
+                                    marginBottom -18
+                            }
+                            MudCheckBox'() {
+                                Checked item.IsDone
+                                CheckedChanged(fun x -> todos |> List.updateAt index { item with IsDone = x } |> onChanged)
+                                Size size'
+                                Disabled disableCheckbox
+                            }
+                            adaptiview () {
+                                let! content', setContent = cval(item.Content).WithSetter()
 
-                                    let update () =
-                                        if content' <> item.Content then
-                                            todos |> List.updateAt index { item with Content = content' } |> onChanged
+                                let update () =
+                                    if content' <> item.Content then
+                                        todos |> List.updateAt index { item with Content = content' } |> onChanged
 
-                                    MudTextField'() {
-                                        Value'(content', setContent)
-                                        Immediate true
-                                        OnKeyDown(fun e ->
-                                            if e.Key = "Enter" then
-                                                update ()
-                                            elif (e.Key = "Backspace" || e.Key = "Delete") && String.IsNullOrEmpty content' then
-                                                todos |> List.removeAt index |> onChanged
-                                        )
-                                        OnBlur(ignore >> update)
-                                        FullWidth true
-                                        DisableUnderLine true
-                                        ReadOnly isDisabled
-                                        Styles [ style.marginTop -5 ]
-                                        stopPropagation "onkeypress" true
-                                        preventDefault "onkeypress" true
-                                    }
+                                MudTextField'() {
+                                    style'' { marginTop -5 }
+                                    Value'(content', setContent)
+                                    Immediate true
+                                    OnKeyDown(fun e ->
+                                        if e.Key = "Enter" then
+                                            update ()
+                                        elif (e.Key = "Backspace" || e.Key = "Delete") && String.IsNullOrEmpty content' then
+                                            todos |> List.removeAt index |> onChanged
+                                    )
+                                    OnBlur(ignore >> update)
+                                    FullWidth true
+                                    DisableUnderLine true
+                                    ReadOnly isDisabled
+                                    stopPropagation "onkeypress" true
+                                    preventDefault "onkeypress" true
                                 }
-                            ]
+                            }
                         }
                     if showInput then
                         adaptiview () {
                             let! txt, setTxt = cval("").WithSetter()
                             MudTextField'() {
+                                style'' { marginLeft 41 }
                                 Value txt
                                 ValueChanged setTxt
                                 Immediate true
@@ -79,13 +75,13 @@ let todoEditor size' showInput isDisabled disableCheckbox (todos: TodoItem list)
                                     if e.Key = "Enter" then
                                         todos @ [ { Content = txt; IsDone = false } ] |> onChanged
                                 )
-                                Styles [ style.marginLeft 41 ]
                                 ReadOnly isDisabled
                             }
                         }
-                ]
+                }
             }
         }
+    )
 
 
 let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (dialogProps: FunDialogProps) =
@@ -206,10 +202,10 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                         }
                     | _ ->
                         adaptiview () {
-                            let! title' = logForm.UseField(fun x -> x.Title)
+                            let! titleStr = logForm.UseField(fun x -> x.Title)
                             MudTextField'() {
                                 Label i18n.App.LogDialog.Title
-                                Value' title'
+                                Value' titleStr
                                 FullWidth true
                                 Disabled isDisabled
                             }
@@ -217,134 +213,142 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
                 ]
                 DialogContent [
                     MudContainer'() {
-                        Styles [
-                            style.overflowHidden
-                            style.displayFlex
-                            style.flexDirectionColumn
-                            if dialogProps.Options.FullScreen = Nullable true then
-                                style.height (length.percent 100)
-                            else
-                                style.maxHeight (length.vh 70)
-                                style.width 720
-                        ]
-                        childContent [
-                            adaptiview () {
-                                let! tags', setTags = logForm.UseField(fun x -> x.Tags)
-                                MudChipSet'() {
-                                    ReadOnly isDisabled
-                                    childContent [
-                                        for i, tag in List.indexed tags' do
-                                            tagChip
-                                                isDisabled
-                                                tag
-                                                (fun _ -> setTags (tags' |> List.removeAt i))
-                                                (fun t -> setTags (tags' |> List.removeAt i |> List.insertAt i t))
-                                        if not isDisabled then
-                                            if tags'.Length > 0 then spaceH3
-                                            newTagChip i18n.App.LogDialog.SelectATag (fun t -> (tags' @ [ t ]) |> List.distinct |> setTags)
-                                    ]
+                        style'' {
+                            overflowHidden
+                            displayFlex
+                            flexDirectionColumn
+                            height "100%"
+                            // TODO
+                            //CombineKeyValue(fun comb ->
+                            //    comb
+                            //    //if dialogProps.Options.FullScreen = Nullable true then
+                            //        //style''.height (comb, "100%") |> ignore
+                            //    //else
+                            //    //    style''.maxHeight (comb, "70vh") &&& style''.width (comb, 720)
+                            //)
+                        }
+                        adaptiview () {
+                            let! tags', setTags = logForm.UseField(fun x -> x.Tags)
+                            MudChipSet'() {
+                                ReadOnly isDisabled
+                                fragment {
+                                    for i, tag in List.indexed tags' do
+                                        tagChip
+                                            isDisabled
+                                            tag
+                                            (fun _ -> setTags (tags' |> List.removeAt i))
+                                            (fun t -> setTags (tags' |> List.removeAt i |> List.insertAt i t))
+                                    if not isDisabled then
+                                        if tags'.Length > 0 then spaceH3
+                                        newTagChip i18n.App.LogDialog.SelectATag (fun t -> (tags' @ [ t ]) |> List.distinct |> setTags)
                                 }
                             }
-                            spaceV2
-                            adaptiview () {
-                                let! detail', setDetail = logForm.UseField(fun x -> x.Detail)
-                                let! isRenderMarkdown = renderMarkdown
-                                let isChecked =
-                                    match detail' with
-                                    | Detail.Todo _ -> true
-                                    | _ -> false
-
-                                let setDetail x =
-                                    isDetailChanged.Publish true
-                                    setDetail x
-
-                                if isChecked || not isRenderMarkdown then
-                                    MudCheckBox'() {
-                                        Color(if isChecked then Color.Success else Color.Default)
-                                        Checked isChecked
-                                        CheckedChanged(fun _ -> toggelTodo detail')
-                                        childContent i18n.App.LogDialog.IsTodo
-                                    }
-                                    spaceV2
+                        }
+                        spaceV2
+                        adaptiview () {
+                            let! detail', setDetail = logForm.UseField(fun x -> x.Detail)
+                            let! isRenderMarkdown = renderMarkdown
+                            let isChecked =
                                 match detail' with
-                                | Detail.Markdown str ->
-                                    if isRenderMarkdown then
-                                        div () {
-                                            ondblclick (fun _ ->
-                                                match action' with
-                                                | Action.DeleteLog _ -> ()
-                                                | Action.EditLog _
-                                                | Action.CreateLog -> renderMarkdown.Publish false
-                                            )
-                                            childContent [ markdown str ]
-                                            styles [
-                                                style.height (length.percent 100)
-                                                style.minHeight 50
-                                                style.overflowYAuto
-                                                style.padding (length.px 0, length.px 5)
-                                                style.marginTop 20
-                                            ]
-                                        }
-                                    else
-                                        adaptiview () {
-                                            let! focused, setFocused = focused |> Adapt.withSetter
-                                            textarea () {
-                                                value str
-                                                oninput (fun e -> e.Value |> string |> Detail.Markdown |> setDetail)
-                                                autofocus true
-                                                placeholder i18n.App.LogDialog.MarkdownPlaceholder
-                                                styles [
-                                                    style.height (length.percent 100)
-                                                    style.width (length.percent 100)
-                                                    style.backgroundColor "transparent"
-                                                    style.resizeNone
-                                                    style.padding 5
-                                                    style.minHeight 200
-                                                    style.color (theme.Palette.TextPrimary.ToString())
-                                                    style.marginTop 20
-                                                    if focused then
-                                                        style.borderBottom (length.px 2, borderStyle.solid, theme.Palette.Primary.ToString())
-                                                    else
-                                                        style.borderBottom (length.px 2, borderStyle.solid, theme.Palette.PrimaryDarken.ToString())
-                                                ]
-                                                onfocus (fun _ -> setFocused true)
-                                                onblur (fun _ -> setFocused false)
-                                            }
-                                        }
-                                | Detail.Todo todos ->
-                                    div () {
-                                        styles [
-                                            style.height (length.perc 100)
-                                        ]
-                                        childContent [
-                                            todoEditor Size.Medium (not isDisabled) isDisabled isDisabled todos (Detail.Todo >> setDetail)
-                                        ]
-                                    }
-                            }
-                            spaceV4
-                            spaceV4
-                            adaptiview () {
-                                let! schedule, setSchedule = logForm.UseField(fun x -> x.Schedule)
+                                | Detail.Todo _ -> true
+                                | _ -> false
 
-                                scheduleEditor DateTime.Now schedule isDisabled setSchedule
-                                adaptiview () {
-                                    let! status, setStatus = logForm.UseField(fun x -> x.Status)
-                                    let isDone' = status = Status.Done
-                                    MudCheckBox'() {
-                                        Label i18n.App.LogDialog.MarkAsDoneNow
-                                        Color(if isDone' then Color.Success else Color.Default)
-                                        Checked isDone'
-                                        CheckedChanged(
-                                            function
-                                            | true -> setStatus Status.Done
-                                            | false -> setStatus Status.Created
+                            let setDetail x =
+                                isDetailChanged.Publish true
+                                setDetail x
+
+                            if isChecked || not isRenderMarkdown then
+                                MudCheckBox'() {
+                                    Color(if isChecked then Color.Success else Color.Default)
+                                    Checked isChecked
+                                    CheckedChanged(fun _ -> toggelTodo detail')
+                                    childContent i18n.App.LogDialog.IsTodo
+                                }
+                                spaceV2
+                            match detail' with
+                            | Detail.Markdown str ->
+                                if isRenderMarkdown then
+                                    div {
+                                        style'' {
+                                            height "100%"
+                                            minHeight 50
+                                            overflowYAuto
+                                            padding "0 5px"
+                                            marginTop 20
+                                        }
+                                        ondblclick (fun _ ->
+                                            match action' with
+                                            | Action.DeleteLog _ -> ()
+                                            | Action.EditLog _
+                                            | Action.CreateLog -> renderMarkdown.Publish false
                                         )
-                                        Disabled isDisabled
+                                        markdown str
                                     }
+                                else
+                                    adaptiview () {
+                                        let! focused, setFocused = focused.WithSetter()
+                                        textarea {
+                                            style'' {
+                                                height "100%"
+                                                width "100%"
+                                                backgroundColor "transparent"
+                                                resizeNone
+                                                padding 5
+                                                minHeight 200
+                                                color (theme.Palette.TextPrimary.ToString())
+                                                marginTop 20
+                                                borderBottomWidth 2
+                                                borderBottomStyle "solid"
+                                                borderBottomColor (
+                                                    if focused then
+                                                        theme.Palette.Primary.ToString()
+                                                    else
+                                                        theme.Palette.PrimaryDarken.ToString()
+                                                )
+                                            }
+                                            value str
+                                            oninput (fun e -> e.Value |> string |> Detail.Markdown |> setDetail)
+                                            autofocus true
+                                            placeholder i18n.App.LogDialog.MarkdownPlaceholder
+                                            onfocus (fun _ ->
+                                                setFocused true
+                                                ()
+                                            )
+                                            onblur (fun _ ->
+                                                setFocused false
+                                                ()
+                                            )
+                                        }
+                                    }
+                            | Detail.Todo todos ->
+                                div {
+                                    style'' { height "100%" }
+                                    todoEditor Size.Medium (not isDisabled) isDisabled isDisabled todos (Detail.Todo >> setDetail)
+                                }
+                        }
+                        spaceV4
+                        spaceV4
+                        adaptiview () {
+                            let! schedule, setSchedule = logForm.UseField(fun x -> x.Schedule)
+
+                            scheduleEditor DateTime.Now schedule isDisabled setSchedule
+                            adaptiview () {
+                                let! status, setStatus = logForm.UseField(fun x -> x.Status)
+                                let isDone' = status = Status.Done
+                                MudCheckBox'() {
+                                    Label i18n.App.LogDialog.MarkAsDoneNow
+                                    Color(if isDone' then Color.Success else Color.Default)
+                                    Checked isDone'
+                                    CheckedChanged(
+                                        function
+                                        | true -> setStatus Status.Done
+                                        | false -> setStatus Status.Created
+                                    )
+                                    Disabled isDisabled
                                 }
                             }
-                            spaceV4
-                        ]
+                        }
+                        spaceV4
                     }
                 ]
                 DialogActions [

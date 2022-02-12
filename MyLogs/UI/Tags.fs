@@ -8,26 +8,24 @@ open MyLogs.Core
 
 
 let tagChip isDisabled (tag: string) onDelete onReplace =
-    html.inject
-    <| fun (store: IShareStore, dialog: IDialogService) ->
+    html.inject (fun (store: IShareStore, dialog: IDialogService) ->
         adaptiview () {
             let! i18n = store.UseI18n()
             let! tags = store.UseTagsMap()
 
-            let styles' =
-                [
-                    match tags |> Map.tryFind tag with
-                    | None -> ()
-                    | Some t -> style.backgroundColor t.Color
-                ]
+            let bgColor =
+                match tags |> Map.tryFind tag with
+                | Some t -> t.Color
+                | None -> "transparent"
 
             if isDisabled then
                 MudChip'() {
-                    Styles styles'
+                    style'' { backgroundColor bgColor }
                     childContent tag
                 }
             else
                 MudChip'() {
+                    style'' { backgroundColor bgColor }
                     CloseIcon Icons.Filled.Close
                     OnClose(fun _ -> onDelete tag)
                     OnClick(fun _ ->
@@ -42,26 +40,25 @@ let tagChip isDisabled (tag: string) onDelete onReplace =
                                     )
                         )
                     )
-                    Styles styles'
                     Size Size.Small
                     childContent tag
                 }
         }
+    )
 
 
-let newTagChip (title': string) onSelected =
-    html.inject
-    <| fun (dialog: IDialogService, store: IShareStore) ->
+let newTagChip (titleStr: string) onSelected =
+    html.inject (fun (dialog: IDialogService, store: IShareStore) ->
         adaptiview () {
             let! i18n = store.UseI18n()
 
             MudButton'() {
+                style'' {
+                    displayInlineBlock
+                    whiteSpaceNowrap
+                }
                 Variant Variant.Outlined
                 Size Size.Small
-                Styles [
-                    style.displayInlineBlock
-                    style.whiteSpaceNowrap
-                ]
                 OnClick(fun _ ->
                     dialog.Show(
                         i18n.App.TagsSelector.SelectATag,
@@ -74,6 +71,7 @@ let newTagChip (title': string) onSelected =
                                 )
                     )
                 )
-                childContent title'
+                titleStr
             }
         }
+    )

@@ -77,26 +77,36 @@ let mudStylesOverride bgColor =
     """
 
 
-type Styles =
+open Fun.Css.Internal
 
-    static member shadowStyles(?bgColor: string) =
+type StyleBuilder with
+
+    [<CustomOperation("lineStyles")>]
+    member inline this.lineStyles([<InlineIfLambda>] comb: CombineKeyValue) =
+        this.displayFlex (comb)
+        &&& this.flexDirectionRow (comb)
+        &&& this.alignItemsCenter (comb)
+        &&& this.alignContentStretch (comb)
+
+
+    [<CustomOperation("shadowStyles")>]
+    member inline this.shadowStyles([<InlineIfLambda>] comb: CombineKeyValue, ?bgColor: string) =
         let bgColor = defaultArg bgColor "rgba(0, 0, 0, 0.2)"
-        [ style.boxShadow $"10px 20px 15px {bgColor}" ]
+        this.boxShadow (comb, $"10px 20px 15px {bgColor}")
 
 
-    static member blurStyles(bgColor: string, ?blur: int) =
+    [<CustomOperation("blurStyles")>]
+    member inline this.blurStyles([<InlineIfLambda>] comb: CombineKeyValue, bgColor: string, ?blur: int) =
         let blur = defaultArg blur 10
-        [
-            style.backgroundColor bgColor
-            style.custom ("-webkit-backdrop-filter", $"blur({blur}px)")
-            style.custom ("backdrop-filter", $"blur({blur}px)")
-        ]
-
-
-    static member lineStyles() =
-        [
-            style.displayFlex
-            style.alignItemsCenter
-            style.flexDirectionRow
-            style.alignContentStretch
-        ]
+        this.backgroundColor (comb, bgColor)
+        &&& Fun.Css.Internal.CombineKeyValue(fun sb ->
+            sb
+                .Append("-webkit-backdrop-filter: ")
+                .Append("blur(")
+                .Append(blur)
+                .Append("px); ")
+                .Append("backdrop-filter: ")
+                .Append("blur(")
+                .Append(blur)
+                .Append("px); ")
+        )

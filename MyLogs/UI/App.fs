@@ -3,7 +3,6 @@ module MyLogs.UI.App
 
 open System
 open FSharp.Data.Adaptive
-open Feliz
 open Fun.Result
 open Fun.Blazor
 open MudBlazor
@@ -12,7 +11,6 @@ open Microsoft.JSInterop
 open MyLogs.Core
 open MyLogs.Services
 
-open type Styles
 
 
 let private listenToSizeChange (jsRuntime: IJSRuntime, store: IShareStore) =
@@ -68,21 +66,18 @@ let private setViewType (store: IShareStore) windowSize =
 
 
 let app =
-    html.inject
-    <| fun (hook: IComponentHook,
-            store: IShareStore,
-            logsSvc: ILogsService,
-            platformSvc: IPlatformService,
-            settingsSvc: ISettingsService,
-            snackbar: ISnackbar,
-            sp: IServiceProvider) ->
+    html.inject (fun (hook: IComponentHook,
+                      store: IShareStore,
+                      logsSvc: ILogsService,
+                      platformSvc: IPlatformService,
+                      settingsSvc: ISettingsService,
+                      sp: IServiceProvider) ->
         let isActive = store.UseIsActive()
         let windowSize = store.UseWindowSize()
         let isLoading = cval true
 
 
-        hook.OnFirstAfterRender.Add
-        <| fun () ->
+        hook.OnFirstAfterRender.Add(fun () ->
             // Syncronous set all init datas to avoid UI flash
             applySettings (sp.GetMultipleServices()) (settingsSvc.GetSettings())
 
@@ -111,6 +106,7 @@ let app =
 
             logsSvc.LoadLogTags() |> ignore
             isLoading.Publish false
+        )
 
 
         adaptiview () {
@@ -129,25 +125,24 @@ let app =
                 let! isActive = isActive
                 let! windowSize = windowSize
 
-                div () {
-                    styles [
-                        style.displayFlex
-                        style.flexDirectionColumn
-                        style.alignItemsStretch
-                        style.height (length.percent 100)
-                        style.overflowHidden
-                        yield! blurStyles bgColor
-                    ]
-                    childContent [
-                        MudThemeProvider'() { Theme theme }
-                        MudDialogProvider'() { DisableBackdropClick true }
-                        MudSnackbarProvider'.create ()
-                        mudStylesOverride bgColor
+                div {
+                    style'' {
+                        displayFlex
+                        flexDirectionColumn
+                        alignItemsStretch
+                        height "100%"
+                        overflowHidden
+                        blurStyles bgColor
+                    }
+                    MudThemeProvider'() { Theme theme }
+                    MudDialogProvider'() { DisableBackdropClick true }
+                    MudSnackbarProvider'.create ()
+                    mudStylesOverride bgColor
 
-                        topToolbar
-                        logsCanvas
-                        if isActive && (windowSize = ExtraSmall || windowSize = Small) then
-                            bottomToolbar
-                    ]
+                    topToolbar
+                    logsCanvas
+                    if isActive && (windowSize = ExtraSmall || windowSize = Small) then
+                        bottomToolbar
                 }
         }
+    )

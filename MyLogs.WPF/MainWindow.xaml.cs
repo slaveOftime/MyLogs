@@ -38,7 +38,7 @@ namespace MyLogs.WPF
                 var serviceCollection = new ServiceCollection();
                 serviceCollection
                     .AddBlazorWebView()
-                    .AddFunBlazor()
+                    .AddFunBlazorServer()
                     .AddMudServices()
                     .AddSingleton<ILogsService, LogsService>()
                     .AddSingleton<ISettingsService, SettingsService>()

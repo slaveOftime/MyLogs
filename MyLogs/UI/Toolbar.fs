@@ -4,77 +4,73 @@ module MyLogs.UI.Toolbar
 open System
 open FSharp.Control.Reactive
 open FSharp.Data.Adaptive
-open Feliz
 open Fun.Result
 open Fun.Blazor
 open MudBlazor
 open MyLogs.Core
 open MyLogs.Services
 
-open type Styles
-
 
 let private header =
-    html.inject
-    <| fun (store: IShareStore) ->
+    html.inject (fun (store: IShareStore) ->
         adaptiview () {
             let! theme = store.UseThemeValue()
-            img () {
+            img {
                 src "_content/MyLogs/assets/mylogs.png"
-                styles [
-                    style.marginLeft 5
-                    style.height 25
-                ]
+                style'' {
+                    marginLeft 5
+                    height 25
+                }
             }
-            h1 () {
-                childContent "My Logs"
-                styles [
-                    style.fontSize 14
-                    style.fontWeight 500
-                    style.userSelectNone
-                    style.marginLeft 5
-                    style.whiteSpaceNowrap
-                    style.color (string theme.Palette.TextSecondary)
-                ]
+            h1 {
+                style'' {
+                    fontSize 14
+                    fontWeight 500
+                    userSelectNone
+                    marginLeft 5
+                    whiteSpaceNowrap
+                    color (string theme.Palette.TextSecondary)
+                }
+                "My Logs"
             }
         }
+    )
 
 
 let private statusBar =
-    html.inject
-    <| fun (store: IShareStore) ->
+    html.inject (fun (store: IShareStore) ->
         adaptiview () {
             let! theme = store.UseThemeValue()
             let! statuses = store.UseStatuses()
 
-            div () {
-                styles [
-                    style.fontSize 12
-                    style.color (string theme.Palette.InfoLighten)
-                    style.textAlignCenter
-                    style.overflowHidden
-                    style.whiteSpaceNowrap
-                    style.width (length.percent 100)
-                ]
-                childContent (if statuses.Length > 0 then statuses.Head else "")
+            div {
+                style'' {
+                    fontSize 12
+                    color (string theme.Palette.InfoLighten)
+                    textAlignCenter
+                    overflowHidden
+                    whiteSpaceNowrap
+                    width "100%"
+                }
+                if statuses.Length > 0 then statuses.Head else ""
             }
         }
+    )
 
 
 let private closeBtn =
-    html.inject
-    <| fun (platformSvc: IPlatformService) ->
+    html.inject (fun (platformSvc: IPlatformService) ->
         MudIconButton'() {
             Size Size.Small
             Icon Icons.Filled.Close
             Color Color.Error
             OnClick(fun _ -> platformSvc.Close())
         }
+    )
 
 
 let private gotoTodayButton =
-    html.inject
-    <| fun (settingsSvc: ISettingsService, store: IShareStore, hook: IComponentHook) ->
+    html.inject (fun (settingsSvc: ISettingsService, store: IShareStore, hook: IComponentHook) ->
         adaptiview () {
             let! i18n = store.UseI18n()
             let! startTime = store.UseStartTime()
@@ -87,41 +83,39 @@ let private gotoTodayButton =
                 | ViewType.Week -> startTime = getMonday().AddDays(int firstDayOfWeek - 1)
 
             MudButton'() {
+                style'' { custom "zoom" "0.8" }
                 Size Size.Small
                 OnClick(fun _ -> store.GoToToday settingsSvc)
                 Variant(if isToday then Variant.Filled else Variant.Text)
                 Color(if isToday then Color.Primary else Color.Default)
-                Styles [ style.custom ("zoom", "0.8") ]
                 childContent i18n.App.GotoToday
             }
         }
+    )
 
 
 let private nextOrPrevButtons =
-    html.inject
-    <| fun (store: IShareStore) ->
+    html.inject (fun (store: IShareStore) ->
         MudButtonGroup'() {
             Size Size.Small
             Variant Variant.Outlined
             preventDefault "onclick" true
-            childContent [
-                MudIconButton'() {
-                    Size Size.Small
-                    Icon Icons.Filled.ArrowBackIos
-                    OnClick(fun _ -> store.GotoNextOrPreviousDays false)
-                }
-                MudIconButton'() {
-                    Size Size.Small
-                    Icon Icons.Filled.ArrowForwardIos
-                    OnClick(fun _ -> store.GotoNextOrPreviousDays true)
-                }
-            ]
+            MudIconButton'() {
+                Size Size.Small
+                Icon Icons.Filled.ArrowBackIos
+                OnClick(fun _ -> store.GotoNextOrPreviousDays false)
+            }
+            MudIconButton'() {
+                Size Size.Small
+                Icon Icons.Filled.ArrowForwardIos
+                OnClick(fun _ -> store.GotoNextOrPreviousDays true)
+            }
         }
+    )
 
 
 let private filterBar isAvtivate =
-    html.inject
-    <| fun (store: IShareStore) ->
+    html.inject (fun (store: IShareStore) ->
         adaptiview () {
             let! i18n = store.UseI18n()
             let! filter', setFilter = store.UseFilter().WithSetter()
@@ -130,59 +124,57 @@ let private filterBar isAvtivate =
             match isAvtivate, hasFilter with
             | false, false -> html.none
             | false, true ->
-                div () {
-                    styles [
-                        yield! lineStyles ()
-                        style.opacity 0.5
-                    ]
-                    childContent [
+                div {
+                    style'' {
+                        lineStyles
+                        opacity 0.5
+                    }
+                    fragment {
                         for tag in filter'.Tags do
-                            div () {
-                                styles [
-                                    style.backgroundColor (store.GetTagColor tag)
-                                    style.height 10
-                                    style.width 40
-                                ]
+                            div {
+                                style'' {
+                                    backgroundColor (store.GetTagColor tag)
+                                    height 10
+                                    width 40
+                                }
                             }
-                    ]
+                    }
                 }
             | true, _ ->
                 spaceH2
-                div () {
-                    styles [
-                        yield! lineStyles ()
-                        style.custom ("zoom", "0.8")
-                    ]
-                    childContent [
-                        newTagChip
-                            i18n.App.FilterByTags
-                            (fun tag ->
+                div {
+                    style'' {
+                        lineStyles
+                        custom "zoom" "0.8"
+                    }
+                    newTagChip
+                        i18n.App.FilterByTags
+                        (fun tag ->
+                            setFilter
+                                { filter' with
+                                    Tags = filter'.Tags @ [ tag ] |> List.distinct
+                                }
+                        )
+                    spaceH2
+                    for index, tag in List.indexed filter'.Tags do
+                        tagChip
+                            false
+                            tag
+                            (fun _ -> setFilter { filter' with Tags = filter'.Tags |> List.removeAt index })
+                            (fun newTag ->
                                 setFilter
                                     { filter' with
-                                        Tags = filter'.Tags @ [ tag ] |> List.distinct
+                                        Tags = filter'.Tags |> List.updateAt index newTag |> List.distinct
                                     }
                             )
-                        spaceH2
-                        for index, tag in List.indexed filter'.Tags do
-                            tagChip
-                                false
-                                tag
-                                (fun _ -> setFilter { filter' with Tags = filter'.Tags |> List.removeAt index })
-                                (fun newTag ->
-                                    setFilter
-                                        { filter' with
-                                            Tags = filter'.Tags |> List.updateAt index newTag |> List.distinct
-                                        }
-                                )
-                    ]
                 }
                 spaceH4
         }
+    )
 
 
 let private viewTypeSwitcher =
-    html.inject
-    <| fun (store: IShareStore) ->
+    html.inject (fun (store: IShareStore) ->
         adaptiview () {
             let! i18n = store.UseI18n()
             let! viewType, setViewType = store.UseViewType().WithSetter()
@@ -190,35 +182,33 @@ let private viewTypeSwitcher =
             MudButtonGroup'() {
                 Size Size.Small
                 Variant Variant.Text
-                childContent [
-                    MudButton'() {
-                        Size Size.Small
-                        OnClick(fun _ -> setViewType ViewType.Week)
-                        Color(
-                            match viewType with
-                            | ViewType.Week -> Color.Primary
-                            | _ -> Color.Default
-                        )
-                        childContent i18n.App.ViewType.Week
-                    }
-                    MudButton'() {
-                        Size Size.Small
-                        OnClick(fun _ -> setViewType ViewType.Day)
-                        Color(
-                            match viewType with
-                            | ViewType.Day -> Color.Primary
-                            | _ -> Color.Default
-                        )
-                        childContent i18n.App.ViewType.Day
-                    }
-                ]
+                MudButton'() {
+                    Size Size.Small
+                    OnClick(fun _ -> setViewType ViewType.Week)
+                    Color(
+                        match viewType with
+                        | ViewType.Week -> Color.Primary
+                        | _ -> Color.Default
+                    )
+                    i18n.App.ViewType.Week
+                }
+                MudButton'() {
+                    Size Size.Small
+                    OnClick(fun _ -> setViewType ViewType.Day)
+                    Color(
+                        match viewType with
+                        | ViewType.Day -> Color.Primary
+                        | _ -> Color.Default
+                    )
+                    i18n.App.ViewType.Day
+                }
             }
         }
+    )
 
 
 let bottomToolbar =
-    html.inject
-    <| fun (settingsSvc: ISettingsService, store: IShareStore, hook: IComponentHook) ->
+    html.inject (fun (settingsSvc: ISettingsService, store: IShareStore, hook: IComponentHook) ->
         let startTime = store.UseStartTime()
 
         hook.AddDisposes [
@@ -229,34 +219,32 @@ let bottomToolbar =
             let! bgColor = store.UsePreferredBackground() |> AVal.map Utilities.MudColor
             let! startTime' = startTime
 
-            div () {
-                styles [
-                    style.flexShrink 0
-                    style.padding (length.px 10, length.px 15)
-                    yield! lineStyles ()
-                    yield! blurStyles (bgColor.SetAlpha(bgColor.APercentage + 0.2).ChangeLightness(0.15).ToString())
-                ]
-                childContent [
-                    MudDatePicker'() {
-                        PickerVariant PickerVariant.Inline
-                        Date(startTime'.ToDateTime(TimeOnly()))
-                        DateChanged(Option.ofNullable >> Option.iter (DateOnly.FromDateTime >> startTime.Publish))
-                        Styles [
-                            style.marginTop -5
-                            style.width 140
-                        ]
-                        Elevation 10
+            div {
+                style'' {
+                    flexShrink 0
+                    padding "10px 15px"
+                    lineStyles
+                    blurStyles (bgColor.SetAlpha(bgColor.APercentage + 0.2).ChangeLightness(0.15).ToString())
+                }
+                MudDatePicker'() {
+                    style'' {
+                        marginTop -5
+                        width 140
                     }
-                    spaceHF
-                    nextOrPrevButtons
-                ]
+                    PickerVariant PickerVariant.Inline
+                    Date(startTime'.ToDateTime(TimeOnly()))
+                    DateChanged(Option.ofNullable >> Option.iter (DateOnly.FromDateTime >> startTime.Publish))
+                    Elevation 10
+                }
+                spaceHF
+                nextOrPrevButtons
             }
         }
+    )
 
 
 let topToolbar =
-    html.inject
-    <| fun (window: IPlatformService, hook: IComponentHook, store: IShareStore, settingsSvc: ISettingsService, snackbar: ISnackbar) ->
+    html.inject (fun (window: IPlatformService, hook: IComponentHook, store: IShareStore, settingsSvc: ISettingsService, snackbar: ISnackbar) ->
         let windowIsActive = store.UseIsActive()
 
         let filter = store.UseFilter()
@@ -297,44 +285,44 @@ let topToolbar =
 
             let bgAlpha = Utilities.MudColor(bgColor).APercentage
 
-            div () {
-                styles [
-                    style.displayFlex
-                    style.alignItemsCenter
-                    style.justifyContentSpaceBetween
-                    style.flexShrink 0
-                    style.overflowYHidden
-                    style.overflowXAuto
-                    style.cursorPointer
-                    if isAvtivate' then
-                        style.height 40
-                        yield! blurStyles (Utilities.MudColor(bgColor).SetAlpha(bgAlpha + 0.2).ChangeLightness(0.15).ToString())
-                    else
-                        style.height 5
-                        yield! blurStyles (Utilities.MudColor(bgColor).SetAlpha(0.30).ToString())
-                ]
+            div {
+                style'' {
+                    displayFlex
+                    alignItemsCenter
+                    justifyContentSpaceBetween
+                    flexShrink 0
+                    overflowYHidden
+                    overflowXAuto
+                    cursorPointer
+                    height (if isAvtivate' then 40 else 5)
+                    blurStyles (
+                        if isAvtivate' then
+                            Utilities.MudColor(bgColor).SetAlpha(bgAlpha + 0.2).ChangeLightness(0.15).ToString()
+                        else
+                            Utilities.MudColor(bgColor).SetAlpha(0.30).ToString()
+                    )
+                }
                 onclick (fun _ -> isAvtivate.Publish true)
-                childContent [
+                if not (windowSize = ExtraSmall || windowSize = Small) then
+                    if isAvtivate' then header
+                    spaceH4
+                    statusBar
+                    spaceH4
+                filterBar isAvtivate'
+                if windowSize = ExtraSmall || windowSize = Small then spaceHF
+                if isAvtivate' then
                     if not (windowSize = ExtraSmall || windowSize = Small) then
-                        if isAvtivate' then header
-                        spaceH4
-                        statusBar
-                        spaceH4
-                    filterBar isAvtivate'
-                    if windowSize = ExtraSmall || windowSize = Small then spaceHF
-                    if isAvtivate' then
-                        if not (windowSize = ExtraSmall || windowSize = Small) then
-                            gotoTodayButton
-                            spaceH2
-                            viewTypeSwitcher
+                        gotoTodayButton
                         spaceH2
-                        settingsDialog
+                        viewTypeSwitcher
+                    spaceH2
+                    settingsDialog
+                    spaceH2
+                    if not (windowSize = ExtraSmall || windowSize = Small) then
+                        closeBtn
                         spaceH2
-                        if not (windowSize = ExtraSmall || windowSize = Small) then
-                            closeBtn
-                            spaceH2
-                            nextOrPrevButtons
-                            spaceH2
-                ]
+                        nextOrPrevButtons
+                        spaceH2
             }
         }
+    )

@@ -12,8 +12,7 @@ open MyLogs.Services
 
 
 let moveLogToDateDialog (currentDate, log: Log) onClose onDone =
-    html.inject
-    <| fun (store: IShareStore, logsSvc: ILogsService, snackbar: ISnackbar, hook: IComponentHook) ->
+    html.inject (fun (store: IShareStore, logsSvc: ILogsService, snackbar: ISnackbar, hook: IComponentHook) ->
         let targetDate = cval None
 
         let move () =
@@ -51,7 +50,7 @@ let moveLogToDateDialog (currentDate, log: Log) onClose onDone =
                 DialogActions [
                     MudButton'() {
                         OnClick(ignore >> onClose)
-                        childContent i18n.App.Common.Close
+                        i18n.App.Common.Close
                     }
                     match targetDate' with
                     | Some t when t <> currentDate ->
@@ -59,9 +58,10 @@ let moveLogToDateDialog (currentDate, log: Log) onClose onDone =
                             Color Color.Primary
                             Variant Variant.Filled
                             OnClick(ignore >> move)
-                            childContent i18n.App.MoveLogToDate
+                            i18n.App.MoveLogToDate
                         }
                     | _ -> html.none
                 ]
             }
         }
+    )

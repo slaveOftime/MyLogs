@@ -12,12 +12,12 @@ open MyLogs.Services
 
 
 let settingsDialog =
-    html.injectWithNoKey (fun (hook: IComponentHook,
-                               store: IShareStore,
-                               settingsSvc: ISettingsService,
-                               platformSvc: IPlatformService,
-                               snackbar: ISnackbar,
-                               dialog: IDialogService) ->
+    html.inject (fun (hook: IComponentHook,
+                      store: IShareStore,
+                      settingsSvc: ISettingsService,
+                      platformSvc: IPlatformService,
+                      snackbar: ISnackbar,
+                      dialog: IDialogService) ->
         let isLoading = cval false
 
         let settingsForm =
@@ -55,165 +55,152 @@ let settingsDialog =
                     DisableSidePadding true
                     DialogContent [
                         MudContainer'() {
-                            Styles [
-                                style.overflowYAuto
+                            style'' {
+                                overflowYAuto
                                 if not (windowSize = ExtraSmall || windowSize = Small) then
-                                    style.width 400
-                                    style.maxHeight 500
-                            ]
-                            childContent [
-                                adaptiview () {
-                                    let! (localPath, setLocalPath), errors = settingsForm.UseFieldWithErrors(fun x -> x.LocalFolder)
-                                    MudTextField'() {
-                                        Label i18n.App.Settings.LocalFolder
-                                        Value localPath
-                                        ValueChanged setLocalPath
-                                        Adornment Adornment.End
-                                        AdornmentIcon Icons.Filled.FolderOpen
-                                        OnAdornmentClick(fun _ ->
-                                            let path = platformSvc.SelectFolder()
-                                            if String.IsNullOrEmpty path |> not then setLocalPath path
-                                        )
-                                        Disabled(isIOS || isAndroid)
-                                        Error(not errors.IsEmpty)
+                                    width 400
+                                    maxHeight 500
+                            }
+                            adaptiview () {
+                                let! (localPath, setLocalPath), errors = settingsForm.UseFieldWithErrors(fun x -> x.LocalFolder)
+                                MudTextField'() {
+                                    Label i18n.App.Settings.LocalFolder
+                                    Value localPath
+                                    ValueChanged setLocalPath
+                                    Adornment Adornment.End
+                                    AdornmentIcon Icons.Filled.FolderOpen
+                                    OnAdornmentClick(fun _ ->
+                                        let path = platformSvc.SelectFolder()
+                                        if String.IsNullOrEmpty path |> not then setLocalPath path
+                                    )
+                                    Disabled(isIOS || isAndroid)
+                                    Error(not errors.IsEmpty)
+                                }
+                            }
+                            spaceV2
+                            adaptiview () {
+                                let! lang' = settingsForm.UseField(fun x -> x.Lang)
+                                MudSelect'() {
+                                    Label i18n.App.Settings.Language
+                                    Value' lang'
+                                    MudSelectItem'() {
+                                        Value Lang.EN
+                                        "English"
+                                    }
+                                    MudSelectItem'() {
+                                        Value Lang.ZH
+                                        "中文"
                                     }
                                 }
-                                spaceV2
-                                adaptiview () {
-                                    let! lang' = settingsForm.UseField(fun x -> x.Lang)
-                                    MudSelect'() {
-                                        Label i18n.App.Settings.Language
-                                        Value' lang'
-                                        childContent [
+                            }
+                            spaceV2
+                            adaptiview () {
+                                let! firstDayOfWeek = settingsForm.UseField(fun x -> x.FirstDayOfWeek)
+                                MudSelect'() {
+                                    Label i18n.App.Settings.FirstDayOfWeek
+                                    Value' firstDayOfWeek
+                                    fragment {
+                                        for day in Enum.GetValues<DayOfWeek>() do
                                             MudSelectItem'() {
-                                                Value Lang.EN
-                                                childContent "English"
+                                                Value day
+                                                formatWeekDay i18n day
                                             }
-                                            MudSelectItem'() {
-                                                Value Lang.ZH
-                                                childContent "中文"
-                                            }
-                                        ]
+                                    }
+                                }
+                            }
+                            spaceV2
+                            adaptiview () {
+                                let! theme = settingsForm.UseField(fun x -> x.Theme)
+                                MudSelect'() {
+                                    Label i18n.App.Settings.Theme
+                                    Value' theme
+                                    MudSelectItem'() { Value Theme.Light }
+                                    MudSelectItem'() { Value Theme.Dark }
+                                }
+                            }
+                            spaceV2
+                            adaptiview () {
+                                let! backgroundColor, setBgColor = settingsForm.UseField(fun x -> x.BackgroundColor)
+                                MudColorPicker'() {
+                                    Value(Utilities.MudColor backgroundColor)
+                                    ValueChanged(string >> setBgColor)
+                                    PickerVariant PickerVariant.Dialog
+                                    Label i18n.App.Settings.BackgrounColor
+                                }
+                            }
+                            spaceV2
+                            div {
+                                style'' { marginLeft -15 }
+                                adaptiview () {
+                                    let! enableHideHeaderTags = settingsForm.UseField(fun x -> x.EnableHideHeaderTags)
+                                    MudCheckBox'() {
+                                        Label i18n.App.Settings.EnableHideHeaderTags
+                                        Checked' enableHideHeaderTags
                                     }
                                 }
                                 spaceV2
                                 adaptiview () {
-                                    let! firstDayOfWeek = settingsForm.UseField(fun x -> x.FirstDayOfWeek)
-                                    MudSelect'() {
-                                        Label i18n.App.Settings.FirstDayOfWeek
-                                        Value' firstDayOfWeek
-                                        childContent [
-                                            for day in Enum.GetValues<DayOfWeek>() do
-                                                MudSelectItem'() {
-                                                    Value day
-                                                    childContent (formatWeekDay i18n day)
-                                                }
-                                        ]
+                                    let! enableHideTimeline = settingsForm.UseField(fun x -> x.EnableHideTimeline)
+                                    MudCheckBox'() {
+                                        Label i18n.App.Settings.EnableHideTimeline
+                                        Checked' enableHideTimeline
                                     }
                                 }
                                 spaceV2
-                                adaptiview () {
-                                    let! theme = settingsForm.UseField(fun x -> x.Theme)
-                                    MudSelect'() {
-                                        Label i18n.App.Settings.Theme
-                                        Value' theme
-                                        childContent [
-                                            //MudSelectItem'(){
-                                            //    Value Theme.Auto
-                                            //}
-                                            MudSelectItem'() { Value Theme.Light }
-                                            MudSelectItem'() { Value Theme.Dark }
-                                        ]
-                                    }
-                                }
-                                spaceV2
-                                adaptiview () {
-                                    let! backgroundColor, setBgColor = settingsForm.UseField(fun x -> x.BackgroundColor)
-                                    MudColorPicker'() {
-                                        Value(Utilities.MudColor backgroundColor)
-                                        ValueChanged(string >> setBgColor)
-                                        PickerVariant PickerVariant.Dialog
-                                        Label i18n.App.Settings.BackgrounColor
-                                    }
-                                }
-                                spaceV2
-                                div () {
-                                    styles [ style.marginLeft -15 ]
-                                    childContent [
-                                        adaptiview () {
-                                            let! enableHideHeaderTags = settingsForm.UseField(fun x -> x.EnableHideHeaderTags)
-                                            MudCheckBox'() {
-                                                Label i18n.App.Settings.EnableHideHeaderTags
-                                                Checked' enableHideHeaderTags
-                                            }
+                                if not (isIOS || isAndroid) then
+                                    adaptiview () {
+                                        let! autoStart = settingsForm.UseField(fun x -> x.AutoStart)
+                                        MudCheckBox'() {
+                                            Label i18n.App.Settings.AutoStart
+                                            Checked' autoStart
                                         }
-                                        spaceV2
-                                        adaptiview () {
-                                            let! enableHideTimeline = settingsForm.UseField(fun x -> x.EnableHideTimeline)
-                                            MudCheckBox'() {
-                                                Label i18n.App.Settings.EnableHideTimeline
-                                                Checked' enableHideTimeline
-                                            }
+                                    }
+                                    spaceV2
+                                    adaptiview () {
+                                        let! alwaysClickable = settingsForm.UseField(fun x -> x.AlwaysClickable)
+                                        MudCheckBox'() {
+                                            Label i18n.App.Settings.AlwaysClickable
+                                            Checked' alwaysClickable
                                         }
-                                        spaceV2
-                                        if not (isIOS || isAndroid) then
-                                            adaptiview () {
-                                                let! autoStart = settingsForm.UseField(fun x -> x.AutoStart)
-                                                MudCheckBox'() {
-                                                    Label i18n.App.Settings.AutoStart
-                                                    Checked' autoStart
-                                                }
-                                            }
-                                            spaceV2
-                                            adaptiview () {
-                                                let! alwaysClickable = settingsForm.UseField(fun x -> x.AlwaysClickable)
-                                                MudCheckBox'() {
-                                                    Label i18n.App.Settings.AlwaysClickable
-                                                    Checked' alwaysClickable
-                                                }
-                                            }
-                                            spaceV2
-                                            adaptiview () {
-                                                let! enableAlwaysOnBottom = settingsForm.UseField(fun x -> x.EnableAlwaysOnBottom)
-                                                MudCheckBox'() {
-                                                    Label i18n.App.Settings.EnableAlwaysOnBottom
-                                                    Checked' enableAlwaysOnBottom
-                                                }
-                                            }
-                                            spaceV2
-                                            adaptiview () {
-                                                let! enableBakcgroundBlur = settingsForm.UseField(fun x -> x.EnableBakcgroundBlur)
-                                                MudCheckBox'() {
-                                                    Label i18n.App.Settings.EnableBackgroundBlur
-                                                    Checked' enableBakcgroundBlur
-                                                }
-                                                MudAlert'() {
-                                                    Severity Severity.Warning
-                                                    Styles [ style.marginLeft 45 ]
-                                                    childContent i18n.App.Settings.EnableBackgroundBlurTip
-                                                }
-                                            }
-                                    ]
-                                }
-                                spaceV2
-                                adaptiview () {
-                                    let! isLoading = isLoading
-                                    if isLoading then
-                                        MudOverlay'() {
-                                            Visible true
-                                            childContent [
-                                                MudProgressCircular'.create ()
-                                            ]
+                                    }
+                                    spaceV2
+                                    adaptiview () {
+                                        let! enableAlwaysOnBottom = settingsForm.UseField(fun x -> x.EnableAlwaysOnBottom)
+                                        MudCheckBox'() {
+                                            Label i18n.App.Settings.EnableAlwaysOnBottom
+                                            Checked' enableAlwaysOnBottom
                                         }
-                                }
-                            ]
+                                    }
+                                    spaceV2
+                                    adaptiview () {
+                                        let! enableBakcgroundBlur = settingsForm.UseField(fun x -> x.EnableBakcgroundBlur)
+                                        MudCheckBox'() {
+                                            Label i18n.App.Settings.EnableBackgroundBlur
+                                            Checked' enableBakcgroundBlur
+                                        }
+                                        MudAlert'() {
+                                            style'' { marginLeft 45 }
+                                            Severity Severity.Warning
+                                            i18n.App.Settings.EnableBackgroundBlurTip
+                                        }
+                                    }
+                            }
+                            spaceV2
+                            adaptiview () {
+                                let! isLoading = isLoading
+                                if isLoading then
+                                    MudOverlay'() {
+                                        Visible true
+                                        MudProgressCircular'.create ()
+                                    }
+                            }
                         }
                     ]
                     DialogActions [
                         MudButton'() {
                             Size Size.Small
                             OnClick(ignore >> props.Close)
-                            childContent i18n.App.Common.Close
+                            i18n.App.Common.Close
                         }
                         adaptiview () {
                             let! errors = settingsForm.UseErrors()
@@ -223,11 +210,12 @@ let settingsDialog =
                                 Color Color.Primary
                                 OnClick(fun _ -> saveSettings props.Close)
                                 Disabled(not errors.IsEmpty)
-                                childContent i18n.App.Common.Save
+                                i18n.App.Common.Save
                             }
                         }
                     ]
                 }
+
             MudIconButton'() {
                 Icon Icons.Filled.Settings
                 Size Size.Small

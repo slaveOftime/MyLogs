@@ -5,81 +5,73 @@ open System
 open System.Linq
 open FSharp.Control.Reactive
 open FSharp.Data.Adaptive
-open Feliz
 open Fun.Blazor
 open MudBlazor
 open Fun.Result
 open MyLogs.Core
 open MyLogs.Services
 
-open type Styles
-
 
 let private logHeader (log: Log) =
-    html.inject
-    <| fun (store: IShareStore, settingsSvc: ISettingsService, hook: IComponentHook) ->
+    html.inject (fun (store: IShareStore, settingsSvc: ISettingsService, hook: IComponentHook) ->
         adaptiview () {
             let! settings = settingsSvc.Settings
 
-            div () {
-                styles [
-                    style.positionAbsolute
-                    style.top -8
-                    style.left 0
-                    style.right 0
-                    style.zIndex 0
-                    style.paddingRight 4
-                    style.paddingLeft 4
-                    yield! lineStyles ()
-                    style.justifyContentSpaceBetween
-                ]
-                childContent [
-                    if not settings.EnableHideHeaderTags then
-                        div () {
-                            styles [ yield! lineStyles () ]
-                            childContent [
-                                for tag in log.Tags.Take 3 do
-                                    let tagColor = store.GetTagColor tag
-                                    MudTooltip'() {
-                                        Text tag
-                                        Arrow true
-                                        Color Color.Primary
-                                        childContent [
-                                            div () {
-                                                styles [
-                                                    style.backgroundColor tagColor
-                                                    style.color "white"
-                                                    style.overflowHidden
-                                                    style.borderRadius 8
-                                                    style.height 16
-                                                    style.fontSize 8
-                                                    style.whiteSpaceNowrap
-                                                    style.textAlignCenter
-                                                    style.padding (length.px 3, length.px 3)
-                                                    style.marginRight 2
-                                                ]
-                                                childContent (tag |> trim 3)
-                                            }
-                                        ]
+            div {
+                style'' {
+                    positionAbsolute
+                    top -8
+                    left 0
+                    right 0
+                    zIndex 0
+                    paddingRight 4
+                    paddingLeft 4
+                    justifyContentSpaceBetween
+                    lineStyles
+                }
+                if not settings.EnableHideHeaderTags then
+                    div {
+                        style'' { lineStyles }
+                        fragment {
+                            for tag in log.Tags.Take 3 do
+                                let tagColor = store.GetTagColor tag
+                                MudTooltip'() {
+                                    Text tag
+                                    Arrow true
+                                    Color Color.Primary
+                                    div {
+                                        style'' {
+                                            backgroundColor tagColor
+                                            color "white"
+                                            overflowHidden
+                                            borderRadius 8
+                                            height 16
+                                            fontSize 8
+                                            whiteSpaceNowrap
+                                            textAlignCenter
+                                            padding 3
+                                            marginRight 2
+                                        }
+                                        tag |> trim 3
                                     }
-                            ]
+                                }
                         }
-                    spaceHF
-                    match log.Status with
-                    | Status.Done ->
-                        MudIcon'() {
-                            Icon Icons.Filled.DoneOutline
-                            Color Color.Success
-                        }
-                    | Status.Created -> ()
-                ]
+                    }
+                spaceHF
+                match log.Status with
+                | Status.Done ->
+                    MudIcon'() {
+                        Icon Icons.Filled.DoneOutline
+                        Color Color.Success
+                    }
+                | Status.Created -> ()
             }
         }
+    )
 
 
 let private logActions (date, log) onSaved =
-    html.inject
-    <| fun (logsService: ILogsService, snackbar: ISnackbar, hook: IComponentHook, dialog: IDialogService, store: IShareStore) ->
+    html.inject (fun (logsService: ILogsService, snackbar: ISnackbar, hook: IComponentHook, dialog: IDialogService, store: IShareStore) ->
         let duplicate () =
             let newLog =
                 { log with
@@ -127,63 +119,62 @@ let private logActions (date, log) onSaved =
                         | _ -> MaxWidth.Medium
                 )
 
-            div () {
-                styles [
-                    style.displayFlex
-                    style.alignItemsCenter
-                    style.justifyContentFlexEnd
-                    style.overflowXAuto
-                ]
-                childContent [
+            div {
+                style'' {
+                    displayFlex
+                    alignItemsCenter
+                    justifyContentFlexEnd
+                    overflowXAuto
+                }
+                MudIconButton'() {
+                    Size size'
+                    Icon Icons.Filled.Transform
+                    OnClick(fun _ ->
+                        let x = 123
+                        dialog.Show(fun dia -> moveLogToDateDialog (date, log) (fun _ -> dia.Close()) (fun _ -> dia.Close()))
+                    )
+                }
+                spaceH2
+                //MudIconButton'(){
+                //    Size size'
+                //    Icon Icons.Filled.EditNote
+                //    OnClick (fun _ ->
+                //        dialog.Show (fun dia ->
+                //            logDialog (date, Action.EditLog log) false
+                //                (fun _ -> onSaved(); dia.Close())
+                //                (fun _ -> dia.Close())
+                //        ))
+                //}
+                //spaceH2
+                match log.Status with
+                | Status.Done -> ()
+                | Status.Created ->
                     MudIconButton'() {
                         Size size'
-                        Icon Icons.Filled.Transform
-                        OnClick(fun _ ->
-                            let x = 123
-                            dialog.Show(fun dia -> moveLogToDateDialog (date, log) (fun _ -> dia.Close()) (fun _ -> dia.Close()))
-                        )
+                        Icon Icons.Filled.Done
+                        OnClick(ignore >> markAsDone)
                     }
                     spaceH2
-                    //MudIconButton'(){
-                    //    Size size'
-                    //    Icon Icons.Filled.EditNote
-                    //    OnClick (fun _ ->
-                    //        dialog.Show (fun dia ->
-                    //            logDialog (date, Action.EditLog log) false
-                    //                (fun _ -> onSaved(); dia.Close())
-                    //                (fun _ -> dia.Close())
-                    //        ))
-                    //}
-                    //spaceH2
-                    match log.Status with
-                    | Status.Done -> ()
-                    | Status.Created ->
-                        MudIconButton'() {
-                            Size size'
-                            Icon Icons.Filled.Done
-                            OnClick(ignore >> markAsDone)
-                        }
-                        spaceH2
-                    MudIconButton'() {
-                        Size size'
-                        Icon Icons.Filled.RemoveRedEye
-                        OnClick(fun _ -> dialog.Show(dialogOptions, logDialog (date, Action.EditLog log) true onSaved))
-                    }
-                    spaceH2
-                    MudIconButton'() {
-                        Size size'
-                        Icon Icons.Filled.Delete
-                        OnClick(fun _ -> dialog.Show(dialogOptions, logDialog (date, Action.DeleteLog log) true onSaved))
-                    }
-                    spaceH2
-                    MudIconButton'() {
-                        Size size'
-                        Icon Icons.Filled.CopyAll
-                        OnClick(ignore >> duplicate)
-                    }
-                ]
+                MudIconButton'() {
+                    Size size'
+                    Icon Icons.Filled.RemoveRedEye
+                    OnClick(fun _ -> dialog.Show(dialogOptions, logDialog (date, Action.EditLog log) true onSaved))
+                }
+                spaceH2
+                MudIconButton'() {
+                    Size size'
+                    Icon Icons.Filled.Delete
+                    OnClick(fun _ -> dialog.Show(dialogOptions, logDialog (date, Action.DeleteLog log) true onSaved))
+                }
+                spaceH2
+                MudIconButton'() {
+                    Size size'
+                    Icon Icons.Filled.CopyAll
+                    OnClick(ignore >> duplicate)
+                }
             }
         }
+    )
 
 
 let logItem (date: DateOnly, log: Log) onSaved =
@@ -278,58 +269,55 @@ let logItem (date: DateOnly, log: Log) onSaved =
                     adaptiview () {
                         let! todos', setTodos = cval(todos).WithSetter()
 
-                        div () {
-                            styles [
-                                style.custom ("zoom", "0.84")
-                                style.marginLeft -14
-                            ]
-                            childContent [
-                                todoEditor
-                                    Size.Small
-                                    showInput
-                                    isDisabled
-                                    false
-                                    todos'
-                                    (if not showInput && isDisabled then Detail.Todo >> saveContent else setTodos)
-                            ]
+                        div {
+                            style'' {
+                                custom "zoom" "0.84"
+                                marginLeft -14
+                            }
+                            todoEditor
+                                Size.Small
+                                showInput
+                                isDisabled
+                                false
+                                todos'
+                                (if not showInput && isDisabled then Detail.Todo >> saveContent else setTodos)
                         }
                         if not isDisabled then
-                            div () {
-                                styles [
-                                    yield! lineStyles ()
-                                    style.justifyContentFlexEnd
-                                ]
-                                childContent [
-                                    MudIconButton'() {
-                                        Size Size.Small
-                                        Icon Icons.Filled.Cancel
-                                        OnClick(fun _ -> editingContent.Publish None)
-                                    }
-                                    spaceH2
-                                    MudIconButton'() {
-                                        Size Size.Small
-                                        Icon Icons.Filled.Save
-                                        OnClick(fun _ -> Detail.Todo todos' |> saveContent)
-                                        Disabled(todos' = todos)
-                                    }
-                                ]
+                            div {
+                                style'' {
+                                    lineStyles
+                                    justifyContentFlexEnd
+                                }
+                                MudIconButton'() {
+                                    Size Size.Small
+                                    Icon Icons.Filled.Cancel
+                                    OnClick(fun _ -> editingContent.Publish None)
+                                }
+                                spaceH2
+                                MudIconButton'() {
+                                    Size Size.Small
+                                    Icon Icons.Filled.Save
+                                    OnClick(fun _ -> Detail.Todo todos' |> saveContent)
+                                    Disabled(todos' = todos)
+                                }
                             }
                     }
 
 
-                div () {
-                    styles [
-                        style.padding 10
-                        style.fontSize 11
-                        style.fontWeight 100
-                        style.positionRelative
-                        style.color (string theme.Palette.TextPrimary)
-                        match tag with
-                        | None when isActive -> style.border (length.px 4, borderStyle.solid, activeBorderColor defaultColor)
-                        | None -> style.borderBottom (length.px 4, borderStyle.solid, normalBorderColor defaultColor)
-                        | Some t when isActive -> style.border ("4px", borderStyle.solid, activeBorderColor t.Color)
-                        | Some t -> style.borderBottom (length.px 4, borderStyle.solid, normalBorderColor t.Color)
-                    ]
+                div {
+                    style'' {
+                        padding 10
+                        fontSize 11
+                        fontWeight 100
+                        positionRelative
+                        color (string theme.Palette.TextPrimary)
+                        // TODO
+                        //match tag with
+                        //| None when isActive -> style.border (length.px 4, borderStyle.solid, activeBorderColor defaultColor)
+                        //| None -> style.borderBottom (length.px 4, borderStyle.solid, normalBorderColor defaultColor)
+                        //| Some t when isActive -> style.border ("4px", borderStyle.solid, activeBorderColor t.Color)
+                        //| Some t -> style.borderBottom (length.px 4, borderStyle.solid, normalBorderColor t.Color)
+                    }
                     ondblclick (fun _ ->
                         match log.Detail with
                         | Detail.Markdown str ->
@@ -353,62 +341,58 @@ let logItem (date: DateOnly, log: Log) onSaved =
                         with
                             | _ -> ()
                     )
-                    childContent [
-                        div () {
-                            styles [
-                                style.positionAbsolute
-                                style.left 0
-                                style.right 0
-                                style.top 0
-                                style.bottom 0
-                                style.userSelectNone
-                                style.zIndex -1
+                    div {
+                        style'' {
+                            positionAbsolute
+                            left 0
+                            right 0
+                            top 0
+                            bottom 0
+                            userSelectNone
+                            zIndex -1
+                            backgroundColor (
                                 match tag with
-                                | None -> style.backgroundColor (normalBgColor defaultColor)
-                                | Some t -> style.backgroundColor (normalBgColor t.Color)
-                            ]
+                                | None -> normalBgColor defaultColor
+                                | Some t -> normalBgColor t.Color
+                            )
                         }
-                        logHeader log
-                        match editingContent' with
-                        | None ->
-                            adaptiview () {
-                                match! detail with
-                                | Detail.Markdown str ->
-                                    div () {
-                                        styles [
-                                            style.whiteSpaceNowrap
-                                            style.overflowHidden
-                                            style.paddingTop 4
-                                        ]
-                                        childContent [
-                                            str |> trim charLimit |> trimLines lineLimit |> markdown
-                                        ]
-                                    }
-                                | Detail.Todo todos -> todoEditor false true todos
-                            }
-                        | Some (Detail.Markdown x) ->
-                            MudTextField'() {
-                                Lines 10
-                                Value x
-                                Label i18n.App.LogDialog.Detail
-                                ValueChanged(Detail.Markdown >> Some >> editingContent.Publish)
-                                AutoFocus true
-                                OnBlur(fun _ -> editingContent.Value |> Option.iter saveContent)
-                                Styles [
-                                    style.fontSize (length.rem 0.9)
-                                ]
-                                draggable true
-                                preventDefault "ondragstart" true
-                                stopPropagation "ondragstart" true
-                            }
-                        | Some (Detail.Todo todos) -> todoEditor true false todos
+                    }
+                    logHeader log
+                    match editingContent' with
+                    | None ->
                         adaptiview () {
-                            let! isHover = isMouseEnterFinal
-                            if isHover && editingContent'.IsNone then
-                                spaceV1
-                                logActions (date, log) onSaved
+                            match! detail with
+                            | Detail.Markdown str ->
+                                div {
+                                    style'' {
+                                        whiteSpaceNowrap
+                                        overflowHidden
+                                        paddingTop 4
+                                    }
+                                    str |> trim charLimit |> trimLines lineLimit |> markdown
+                                }
+                            | Detail.Todo todos -> todoEditor false true todos
                         }
-                    ]
+                    | Some (Detail.Markdown x) ->
+                        MudTextField'() {
+                            style'' { fontSize "0.9rem" }
+                            Lines 10
+                            Value x
+                            Label i18n.App.LogDialog.Detail
+                            ValueChanged(Detail.Markdown >> Some >> editingContent.Publish)
+                            AutoFocus true
+                            OnBlur(fun _ -> editingContent.Value |> Option.iter saveContent)
+                            draggable true
+                            preventDefault "ondragstart" true
+                            stopPropagation "ondragstart" true
+                        }
+                    | Some (Detail.Todo todos) -> todoEditor true false todos
+                    adaptiview () {
+                        let! isHover = isMouseEnterFinal
+                        if isHover && editingContent'.IsNone then
+                            spaceV1
+                            logActions (date, log) onSaved
+                    }
                 }
             }
     )
