@@ -91,12 +91,14 @@ let private dayHeader (date: DateOnly) days isToday =
                 }
                 if showPreview then
                     MudIconButton'() {
-                        Icon Icons.Filled.ArrowBackIos
-                        OnClick(fun _ -> store.GotoNextOrPreviousDays false)
                         style'' {
                             opacity 0.6
-                            marginRight -10
+                            marginRight -20
+                            marginLeft 10
                         }
+                        Size Size.Small
+                        Icon Icons.Filled.ArrowBackIos
+                        OnClick(fun _ -> store.GotoNextOrPreviousDays false)
                     }
                 div {
                     style'' {
@@ -129,12 +131,14 @@ let private dayHeader (date: DateOnly) days isToday =
                 }
                 if showNext then
                     MudIconButton'() {
-                        Icon Icons.Filled.ArrowForwardIos
-                        OnClick(fun _ -> store.GotoNextOrPreviousDays true)
                         style'' {
                             opacity 0.6
-                            marginLeft -10
+                            marginLeft -20
+                            marginRight 10
                         }
+                        Size Size.Small
+                        Icon Icons.Filled.ArrowForwardIos
+                        OnClick(fun _ -> store.GotoNextOrPreviousDays true)
                     }
             }
         }
@@ -355,6 +359,8 @@ let logsDaysView (days: int) =
                                     positionRelative
                                     displayFlex
                                     flexGrow 1
+                                    flexShrink 0
+                                    flexBasis 0
                                     flexDirectionColumn
                                     alignItemsStretch
                                     if isToday then

@@ -8,7 +8,7 @@
 		<UseWindowsForms>true</UseWindowsForms>
 		<SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
 		<ApplicationIcon>mylogs.ico</ApplicationIcon>
-		<Version>0.1.1</Version>
+		<Version>0.2.1</Version>
 		<Authors>slaveOftime</Authors>
 		<Company>slaveOftime</Company>
 		<PackageId>MyLogs (WPF)</PackageId>
