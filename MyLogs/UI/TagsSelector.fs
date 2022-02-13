@@ -20,7 +20,7 @@ let private colorPicker color onChanged =
                 Value color'
                 ValueChanged setColor
                 PickerVariant PickerVariant.Dialog
-                PickerClosed(fun _ -> color'.ToString() |> onChanged)
+                PickerClosed(fun _ -> color'.ToString() |> onChanged |> ignore)
             }
         }
     }

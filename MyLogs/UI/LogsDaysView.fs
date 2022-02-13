@@ -351,10 +351,10 @@ let logsDaysView (days: int) =
                             div {
                                 style'' {
                                     height "100%"
-                                    flexGrow 1
                                     overflowHidden
                                     positionRelative
                                     displayFlex
+                                    flexGrow 1
                                     flexDirectionColumn
                                     alignItemsStretch
                                     if isToday then
