@@ -35,7 +35,7 @@ let moveLogToDateDialog (currentDate, log: Log) onClose onDone =
             | _ -> ()
 
         adaptiview () {
-            let! i18n = store.UseI18n()
+            let! i18n = store.I18n
             let! targetDate' = targetDate
 
             MudDialog'() {

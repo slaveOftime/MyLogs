@@ -102,7 +102,7 @@ let private logActions (date, log) onSaved =
 
 
         adaptiview () {
-            let! windowSize = store.UseWindowSize()
+            let! windowSize = store.WindowSize
             let size' =
                 if windowSize = ExtraSmall || windowSize = Small then
                     Size.Medium
@@ -181,7 +181,7 @@ let logItem (date: DateOnly, log: Log) onSaved =
     html.inject (
         log.Id,
         fun (store: IShareStore, hook: IComponentHook, logsService: ILogsService, dialog: IDialogService) ->
-            let statuses = store.UseStatuses()
+            let statuses = store.Statuses
             let today = cval (DateOnly.FromDateTime(DateTime.Now))
             let isMouseEnter = hook.UseStore false
             let isMouseEnterFinal = cval false
@@ -226,16 +226,16 @@ let logItem (date: DateOnly, log: Log) onSaved =
 
 
             adaptiview () {
-                let! i18n = store.UseI18n()
-                let! windowSize = store.UseWindowSize()
-                let! theme = store.UseTheme()
+                let! i18n = store.I18n
+                let! windowSize = store.WindowSize
+                let! theme = store.Theme
                 let theme =
                     match theme with
                     | Dark t
                     | Light t -> t
                 let defaultColor = theme.Palette.Primary.ToString()
 
-                let! tags = store.UseTagsMap()
+                let! tags = store.TagsMap
                 let! editingContent' = editingContent
 
                 let dialogOptions =

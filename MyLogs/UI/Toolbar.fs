@@ -14,7 +14,7 @@ open MyLogs.Services
 let private header =
     html.inject (fun (store: IShareStore) ->
         adaptiview () {
-            let! theme = store.UseThemeValue()
+            let! theme = store.ThemeValue
             img {
                 src "_content/MyLogs/assets/mylogs.png"
                 style'' {
@@ -40,8 +40,8 @@ let private header =
 let private statusBar =
     html.inject (fun (store: IShareStore) ->
         adaptiview () {
-            let! theme = store.UseThemeValue()
-            let! statuses = store.UseStatuses()
+            let! theme = store.ThemeValue
+            let! statuses = store.Statuses
 
             div {
                 style'' {
@@ -72,10 +72,10 @@ let private closeBtn =
 let private gotoTodayButton =
     html.inject (fun (settingsSvc: ISettingsService, store: IShareStore, hook: IComponentHook) ->
         adaptiview () {
-            let! i18n = store.UseI18n()
-            let! startTime = store.UseStartTime()
+            let! i18n = store.I18n
+            let! startTime = store.StartTime
             let! firstDayOfWeek = settingsSvc.Settings |> AVal.map (fun x -> x.FirstDayOfWeek)
-            let! viewType = store.UseViewType()
+            let! viewType = store.ViewType
 
             let isToday =
                 match viewType with
@@ -117,8 +117,8 @@ let private nextOrPrevButtons =
 let private filterBar isAvtivate =
     html.inject (fun (store: IShareStore) ->
         adaptiview () {
-            let! i18n = store.UseI18n()
-            let! filter', setFilter = store.UseFilter().WithSetter()
+            let! i18n = store.I18n
+            let! filter', setFilter = store.Filter.WithSetter()
             let hasFilter = filter'.Tags.Length > 0
 
             match isAvtivate, hasFilter with
@@ -176,8 +176,8 @@ let private filterBar isAvtivate =
 let private viewTypeSwitcher =
     html.inject (fun (store: IShareStore) ->
         adaptiview () {
-            let! i18n = store.UseI18n()
-            let! viewType, setViewType = store.UseViewType().WithSetter()
+            let! i18n = store.I18n
+            let! viewType, setViewType = store.ViewType.WithSetter()
 
             MudButtonGroup'() {
                 Size Size.Small
@@ -209,14 +209,14 @@ let private viewTypeSwitcher =
 
 let bottomToolbar =
     html.inject (fun (settingsSvc: ISettingsService, store: IShareStore, hook: IComponentHook) ->
-        let startTime = store.UseStartTime()
+        let startTime = store.StartTime
 
         hook.AddDisposes [
             settingsSvc.Settings.AddLazyCallback(fun _ -> DateTime.Now |> DateOnly.FromDateTime |> startTime.Publish)
         ]
 
         adaptiview () {
-            let! bgColor = store.UsePreferredBackground() |> AVal.map Utilities.MudColor
+            let! bgColor = store.PreferredBackground |> AVal.map Utilities.MudColor
             let! startTime' = startTime
 
             div {
@@ -245,10 +245,10 @@ let bottomToolbar =
 
 let topToolbar =
     html.inject (fun (window: IPlatformService, hook: IComponentHook, store: IShareStore, settingsSvc: ISettingsService, snackbar: ISnackbar) ->
-        let windowIsActive = store.UseIsActive()
+        let windowIsActive = store.IsActive
 
-        let filter = store.UseFilter()
-        let statuses = store.UseStatuses()
+        let filter = store.Filter
+        let statuses = store.Statuses
 
         let isAvtivate = cval windowIsActive.Value
 
@@ -279,8 +279,8 @@ let topToolbar =
 
 
         adaptiview () {
-            let! bgColor = store.UsePreferredBackground()
-            let! windowSize = store.UseWindowSize()
+            let! bgColor = store.PreferredBackground
+            let! windowSize = store.WindowSize
             let! isAvtivate' = isAvtivate
 
             let bgAlpha = Utilities.MudColor(bgColor).APercentage

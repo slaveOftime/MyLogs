@@ -10,8 +10,8 @@ open MyLogs.Core
 let tagChip isDisabled (tag: string) onDelete onReplace =
     html.inject (fun (store: IShareStore, dialog: IDialogService) ->
         adaptiview () {
-            let! i18n = store.UseI18n()
-            let! tags = store.UseTagsMap()
+            let! i18n = store.I18n
+            let! tags = store.TagsMap
 
             let bgColor =
                 match tags |> Map.tryFind tag with
@@ -50,7 +50,7 @@ let tagChip isDisabled (tag: string) onDelete onReplace =
 let newTagChip (titleStr: string) onSelected =
     html.inject (fun (dialog: IDialogService, store: IShareStore) ->
         adaptiview () {
-            let! i18n = store.UseI18n()
+            let! i18n = store.I18n
 
             MudButton'() {
                 style'' {

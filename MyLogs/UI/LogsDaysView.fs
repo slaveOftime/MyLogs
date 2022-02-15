@@ -69,12 +69,12 @@ let private dayHeader (date: DateOnly) days isToday =
     html.inject
     <| fun (store: IShareStore) ->
         adaptiview () {
-            let! i18n = store.UseI18n()
-            let! theme = store.UseThemeValue()
+            let! i18n = store.I18n
+            let! theme = store.ThemeValue
             let! showNext, showPreview =
                 adaptive {
-                    let! startTime = store.UseStartTime()
-                    let! viewType = store.UseViewType()
+                    let! startTime = store.StartTime
+                    let! viewType = store.ViewType
                     return
                         match viewType with
                         | ViewType.Day -> false, false
@@ -147,7 +147,7 @@ let private dayHeader (date: DateOnly) days isToday =
 let schedulerBar log =
     html.inject (fun (store: IShareStore) ->
         adaptiview () {
-            let! theme = store.UseThemeValue()
+            let! theme = store.ThemeValue
 
             match log.Schedule with
             | Schedule.Alarm s ->
@@ -200,9 +200,9 @@ let logsDaysView (days: int) =
              settingsSvc: ISettingsService,
              dialog: IDialogService,
              snackbar: ISnackbar) ->
-            let startTime = store.UseStartTime()
-            let innerWidth = store.UseInnerWidth()
-            let filter = store.UseFilter()
+            let startTime = store.StartTime
+            let innerWidth = store.InnerWidth
+            let filter = store.Filter
 
             let today = cval (DateOnly.FromDateTime DateTime.Now)
             let canDragToNextWeek = hook.UseStore false
@@ -307,8 +307,8 @@ let logsDaysView (days: int) =
 
             adaptiview () {
                 let! settings = settingsSvc.Settings
-                let! windowSize = store.UseWindowSize()
-                let! bgColor = store.UsePreferredBackground()
+                let! windowSize = store.WindowSize
+                let! bgColor = store.PreferredBackground
                 let! today = today
                 let! startTime' = startTime
 

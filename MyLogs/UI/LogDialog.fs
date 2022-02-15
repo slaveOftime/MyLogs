@@ -20,7 +20,7 @@ type Action =
 let todoEditor size' showInput isDisabled disableCheckbox (todos: TodoItem list) onChanged =
     html.inject (fun (store: IShareStore) ->
         adaptiview () {
-            let! i18n = store.UseI18n()
+            let! i18n = store.I18n
             div {
                 fragment {
                     for index, item in List.indexed todos do
@@ -87,7 +87,7 @@ let todoEditor size' showInput isDisabled disableCheckbox (todos: TodoItem list)
 let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (dialogProps: FunDialogProps) =
     html.inject
     <| fun (hook: IComponentHook, store: IShareStore, logsSvc: ILogsService) ->
-        let statuses = store.UseStatuses()
+        let statuses = store.Statuses
         let renderMarkdown = cval renderMarkdown
         let focused = cval false
 
@@ -187,8 +187,8 @@ let logDialog (date: DateOnly, action': Action) (renderMarkdown: bool) onSaved (
 
 
         adaptiview () {
-            let! i18n = store.UseI18n()
-            let! theme = store.UseThemeValue()
+            let! i18n = store.I18n
+            let! theme = store.ThemeValue
 
             MudDialog'() {
                 DisableSidePadding true

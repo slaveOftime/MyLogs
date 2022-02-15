@@ -16,13 +16,13 @@ open MyLogs.Services
 let private listenToSizeChange (jsRuntime: IJSRuntime, store: IShareStore) =
     task {
         let! window = jsRuntime.Window()
-        store.UseInnerWidth().Publish window.InnerWidth
+        store.InnerWidth.Publish window.InnerWidth
 
         window.OnResize(fun () ->
             task {
                 let! window = jsRuntime.Window()
-                store.UseInnerWidth().Publish window.InnerWidth
-                store.UseWindowSize().Publish(getWindowSize window.InnerWidth)
+                store.InnerWidth.Publish window.InnerWidth
+                store.WindowSize.Publish(getWindowSize window.InnerWidth)
             }
             |> ignore
             System.Threading.Tasks.ValueTask.CompletedTask
@@ -37,9 +37,9 @@ let private applySettings
     (settings: Settings)
     =
     transact (fun () ->
-        let bgColor = store.UsePreferredBackground()
-        let filter = store.UseFilter()
-        let theme = store.UseTheme()
+        let bgColor = store.PreferredBackground
+        let filter = store.Filter
+        let theme = store.Theme
 
         if bgColor.Value <> settings.BackgroundColor then
             bgColor.Value <- settings.BackgroundColor
@@ -63,7 +63,7 @@ let private applySettings
 
 
 let private setViewType (store: IShareStore) windowSize =
-    let viewType = store.UseViewType()
+    let viewType = store.ViewType
     if windowSize = ExtraSmall || windowSize = Small then
         viewType.Publish ViewType.Day
     else
@@ -77,8 +77,8 @@ let app =
                       platformSvc: IPlatformService,
                       settingsSvc: ISettingsService,
                       sp: IServiceProvider) ->
-        let isActive = store.UseIsActive()
-        let windowSize = store.UseWindowSize()
+        let isActive = store.IsActive
+        let windowSize = store.WindowSize
         let isLoading = cval true
 
 
@@ -88,13 +88,13 @@ let app =
 
             let width, _ = platformSvc.GetSize()
             let size = getWindowSize (int width)
-            store.UseInnerWidth().Publish(int width)
+            store.InnerWidth.Publish(int width)
             windowSize.Publish size
             setViewType (sp.GetMultipleServices()) size
             store.GoToToday()
 
             hook.AddDisposes [
-                logsSvc.Tags.AddCallback(fun x -> x.Tags |> List.map (fun x -> x.Name, x) |> Map.ofList |> store.UseTagsMap().Publish)
+                logsSvc.Tags.AddCallback(fun x -> x.Tags |> List.map (fun x -> x.Name, x) |> Map.ofList |> store.TagsMap.Publish)
 
                 settingsSvc.Settings.AddLazyCallback(applySettings (sp.GetMultipleServices()))
 
@@ -125,8 +125,8 @@ let app =
                     Indeterminate true
                 }
             else
-                let! theme = store.UseThemeValue()
-                let! bgColor = store.UsePreferredBackground()
+                let! theme = store.ThemeValue
+                let! bgColor = store.PreferredBackground
                 let! isActive = isActive
                 let! windowSize = windowSize
 

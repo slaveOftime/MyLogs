@@ -12,8 +12,8 @@ open MyLogs.Core
 let scheduleEditor (date: DateTime) (schedule: Schedule) isDisabled onChanged =
     html.inject (fun (store: IShareStore) ->
         adaptiview () {
-            let! i18n = store.UseI18n()
-            let! bgColor = store.UsePreferredBackground()
+            let! i18n = store.I18n
+            let! bgColor = store.PreferredBackground
 
             div {
                 style'' {

@@ -28,7 +28,7 @@ let private colorPicker color onChanged =
 
 let tagsSelector onClose onSelect =
     html.inject (fun (store: IShareStore, hook: IComponentHook, logsSvc: ILogsService, snackbar: ISnackbar) ->
-        let tagsMap = store.UseTagsMap()
+        let tagsMap = store.TagsMap
         let filter = cval ""
         let editingTag = cval None
         let changedTags = cval Map.empty<string, Tag>
@@ -111,7 +111,7 @@ let tagsSelector onClose onSelect =
 
 
         adaptiview () {
-            let! i18n = store.UseI18n()
+            let! i18n = store.I18n
 
             MudDialog'() {
                 DisableSidePadding true

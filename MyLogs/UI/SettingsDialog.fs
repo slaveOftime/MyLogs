@@ -45,8 +45,8 @@ let settingsDialog =
 
 
         adaptiview () {
-            let! i18n = store.UseI18n()
-            let! windowSize = store.UseWindowSize()
+            let! i18n = store.I18n
+            let! windowSize = store.WindowSize
 
             let dialogOptions = DialogOptions(FullScreen = (windowSize = ExtraSmall || windowSize = Small))
 

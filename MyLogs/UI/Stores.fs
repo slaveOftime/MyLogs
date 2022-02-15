@@ -76,17 +76,18 @@ let private darkTheme () =
 
 type IShareStore with
 
-    member this.UseTheme() = this.CreateCVal("theme", darkTheme ())
+    member this.Theme = this.CreateCVal("theme", darkTheme ())
 
-    member this.UseThemeValue() =
-        this.UseTheme()
+    member this.ThemeValue =
+        this.Theme
         |> AVal.map (
             function
             | Light x
             | Dark x -> x
         )
-    member this.UseIsDark() =
-        this.UseTheme()
+
+    member this.IsDark =
+        this.Theme
         |> AVal.map (
             function
             | Light _ -> false
@@ -94,51 +95,47 @@ type IShareStore with
         )
 
     member this.SwitchTheme() =
-        this
-            .UseTheme()
-            .Publish(
-                function
-                | Light _ -> darkTheme ()
-                | Dark _ -> lightTheme ()
-            )
+        this.Theme.Publish(
+            function
+            | Light _ -> darkTheme ()
+            | Dark _ -> lightTheme ()
+        )
 
 
-    member this.UseIsActive() = this.CreateCVal("isactive", true)
-    member this.UsePreferredBackground() =
-        this.CreateCVal("preferred-background", "#061f153f")
-    member this.UseViewType() = this.CreateCVal("view-type", ViewType.Week)
+    member this.IsActive = this.CreateCVal("isactive", true)
+    member this.PreferredBackground = this.CreateCVal("preferred-background", "#061f153f")
+    member this.ViewType = this.CreateCVal("view-type", ViewType.Week)
 
-    member this.UseStatuses() = this.CreateCVal("status", List<string>.Empty)
+    member this.Statuses = this.CreateCVal("status", List<string>.Empty)
 
-    member this.UseTagsMap() =
-        this.CreateCVal("tags-map", Map.empty<string, Tag>)
+    member this.TagsMap = this.CreateCVal("tags-map", Map.empty<string, Tag>)
 
     member this.GetTagColor tag =
-        this.UseTagsMap().Value
+        this.TagsMap.Value
         |> Map.tryFind tag
         |> Option.map (fun x -> x.Color)
-        |> Option.defaultWith (fun _ -> this.UseThemeValue() |> AVal.force |> fun t -> t.Palette.Success.ToString())
+        |> Option.defaultWith (fun _ -> this.ThemeValue |> AVal.force |> fun t -> t.Palette.Success.ToString())
 
-    member this.UseFilter() = this.CreateCVal("filter", Filter.DefaultValue)
+    member this.Filter = this.CreateCVal("filter", Filter.DefaultValue)
 
-    member this.UseInnerWidth() = this.CreateCVal("inner-width", 0)
-    member this.UseWindowSize() = this.CreateCVal("window-size", Small)
+    member this.InnerWidth = this.CreateCVal("inner-width", 0)
+    member this.WindowSize = this.CreateCVal("window-size", Small)
 
 
-    member this.UseI18n() = this.CreateCVal("i18n", detaultI18n)
+    member this.I18n = this.CreateCVal("i18n", detaultI18n)
 
     member this.ChangeI18n(lang: Lang) =
-        let i18n = this.UseI18n()
+        let i18n = this.I18n
         i18n.Publish(Fun.I18n.Provider.Utils.createI18nWith detaultI18n (i18nPath lang))
-        
+
 
     member this.FirstDayOfWeek = this.CreateCVal("first-day-of-week", DayOfWeek.Monday)
 
-    member this.UseStartTime() = this.CreateCVal("start-time", getMonday ())
+    member this.StartTime = this.CreateCVal("start-time", getMonday ())
 
     member this.GoToToday() =
-        let viewType = this.UseViewType()
-        let startTime = this.UseStartTime()
+        let viewType = this.ViewType
+        let startTime = this.StartTime
 
         match viewType.Value with
         | ViewType.Week ->
@@ -148,8 +145,7 @@ type IShareStore with
 
     member this.GotoNextOrPreviousDays isForward =
         let flag = if isForward then 1 else -1
-        let startTime = this.UseStartTime()
-        match this.UseViewType().Value with
+        let startTime = this.StartTime
+        match this.ViewType.Value with
         | ViewType.Week -> startTime.Publish(fun s -> s.AddDays(7 * flag))
         | ViewType.Day -> startTime.Publish(fun s -> s.AddDays(1 * flag))
-

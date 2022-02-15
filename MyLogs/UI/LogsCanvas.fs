@@ -7,8 +7,8 @@ open Fun.Blazor
 let logsCanvas =
     html.inject (fun (store: IShareStore) ->
         adaptiview () {
-            let! viewType = store.UseViewType()
-            let! windowSize = store.UseWindowSize()
+            let! viewType = store.ViewType
+            let! windowSize = store.WindowSize
 
             div {
                 style'' {
