@@ -299,7 +299,7 @@ let logsDaysView (days: int) =
                     |> Observable.interval
                     |> Observable.subscribe (fun _ -> DateOnly.FromDateTime DateTime.Now |> today.Publish)
 
-                    today.AddLazyCallback(fun today -> if today > startTime.Value.AddDays(days - 1) then store.GoToToday settingsSvc)
+                    today.AddLazyCallback(fun today -> if today > startTime.Value.AddDays(days - 1) then store.GoToToday())
                 ]
 
                 loadAllLogs startTime.Value

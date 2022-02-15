@@ -33,28 +33,33 @@ let private listenToSizeChange (jsRuntime: IJSRuntime, store: IShareStore) =
 
 
 let private applySettings
-    (store: IShareStore, settingsSvc: ISettingsService, platformSvc: IPlatformService, logsSvc: ILogsService)
+    (store: IShareStore, platformSvc: IPlatformService, logsSvc: ILogsService)
     (settings: Settings)
     =
-    let bgColor = store.UsePreferredBackground()
-    let filter = store.UseFilter()
-    let theme = store.UseTheme()
+    transact (fun () ->
+        let bgColor = store.UsePreferredBackground()
+        let filter = store.UseFilter()
+        let theme = store.UseTheme()
 
-    if bgColor.Value <> settings.BackgroundColor then
-        bgColor.Publish settings.BackgroundColor
+        if bgColor.Value <> settings.BackgroundColor then
+            bgColor.Value <- settings.BackgroundColor
 
-    if filter.Value.Tags <> settings.TagsFilter then
-        filter.Publish(fun f -> { f with Tags = settings.TagsFilter })
+        if filter.Value.Tags <> settings.TagsFilter then
+            filter.Value <- { filter.Value with Tags = settings.TagsFilter }
 
-    match settings.Theme, theme.Value with
-    | Theme.Light, Dark _ -> store.SwitchTheme()
-    | Theme.Dark, Light _ -> store.SwitchTheme()
-    | _ -> ()
+        match settings.Theme, theme.Value with
+        | Theme.Light, Dark _ -> store.SwitchTheme()
+        | Theme.Dark, Light _ -> store.SwitchTheme()
+        | _ -> ()
 
-    platformSvc.SwitchAutoStart settings.AutoStart |> ignore
-    platformSvc.SwitchBackgroundBlur settings.EnableBakcgroundBlur |> ignore
-    logsSvc.LoadLogTags() |> ignore
-    store.ChangeI18n settings.Lang
+        platformSvc.SwitchAutoStart settings.AutoStart |> ignore
+        platformSvc.SwitchBackgroundBlur settings.EnableBakcgroundBlur |> ignore
+        logsSvc.LoadLogTags() |> ignore
+        store.ChangeI18n settings.Lang
+        store.FirstDayOfWeek.Value <- settings.FirstDayOfWeek
+    )
+    store.GoToToday()
+
 
 
 let private setViewType (store: IShareStore) windowSize =
@@ -86,7 +91,7 @@ let app =
             store.UseInnerWidth().Publish(int width)
             windowSize.Publish size
             setViewType (sp.GetMultipleServices()) size
-            store.GoToToday settingsSvc
+            store.GoToToday()
 
             hook.AddDisposes [
                 logsSvc.Tags.AddCallback(fun x -> x.Tags |> List.map (fun x -> x.Name, x) |> Map.ofList |> store.UseTagsMap().Publish)

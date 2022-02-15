@@ -130,18 +130,20 @@ type IShareStore with
     member this.ChangeI18n(lang: Lang) =
         let i18n = this.UseI18n()
         i18n.Publish(Fun.I18n.Provider.Utils.createI18nWith detaultI18n (i18nPath lang))
+        
 
+    member this.FirstDayOfWeek = this.CreateCVal("first-day-of-week", DayOfWeek.Monday)
 
     member this.UseStartTime() = this.CreateCVal("start-time", getMonday ())
 
-    member this.GoToToday(settingsSvc: ISettingsService) =
+    member this.GoToToday() =
         let viewType = this.UseViewType()
         let startTime = this.UseStartTime()
 
         match viewType.Value with
         | ViewType.Week ->
-            let s = settingsSvc.GetSettings()
-            getMonday().AddDays(int s.FirstDayOfWeek - 1) |> startTime.Publish
+            let firstDay = int this.FirstDayOfWeek.Value
+            getMonday().AddDays(firstDay - 1) |> startTime.Publish
         | ViewType.Day -> DateTime.Now |> DateOnly.FromDateTime |> startTime.Publish
 
     member this.GotoNextOrPreviousDays isForward =
@@ -150,3 +152,4 @@ type IShareStore with
         match this.UseViewType().Value with
         | ViewType.Week -> startTime.Publish(fun s -> s.AddDays(7 * flag))
         | ViewType.Day -> startTime.Publish(fun s -> s.AddDays(1 * flag))
+

@@ -85,7 +85,7 @@ let private gotoTodayButton =
             MudButton'() {
                 style'' { custom "zoom" "0.8" }
                 Size Size.Small
-                OnClick(fun _ -> store.GoToToday settingsSvc)
+                OnClick(fun _ -> store.GoToToday())
                 Variant(if isToday then Variant.Filled else Variant.Text)
                 Color(if isToday then Color.Primary else Color.Default)
                 childContent i18n.App.GotoToday
